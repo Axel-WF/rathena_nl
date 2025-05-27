@@ -379,6 +379,14 @@ enum monsterinfo_types {
 	MOB_MVPEXP
 };
 
+#ifdef BGEXTENDED
+enum npcinfo_types {
+	NPC_MAP = 0,
+	NPC_X,
+	NPC_Y,
+};
+#endif
+
 enum petinfo_types {
 	PETINFO_ID = 0,
 	PETINFO_CLASS,

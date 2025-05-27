@@ -99,4 +99,8 @@
 
 #include "../custom/defines_post.hpp"
 
+/// Battleground Extended [Grenat]
+/// Comment to disable Battleground Extended
+#define BGEXTENDED
+
 #endif /* CONFIG_CORE_HPP */

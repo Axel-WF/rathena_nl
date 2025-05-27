@@ -31,21 +31,41 @@
 ###########################################################################
 
 Header:
-  Type: CONSTANT_DB
-  Version: 1
+    Type: CONSTANT_DB
+    Version: 1
 
 Body:
-  - Name: SWORDCLAN
-    Value: 1
-  - Name: ARCWANDCLAN
-    Value: 2
-  - Name: GOLDENMACECLAN
-    Value: 3
-  - Name: CROSSBOWCLAN
-    Value: 4
-  - Name: JUMPINGCLAN
-    Value: 5
+    - Name: BG_BOMBERMAN
+      Value: 1
+    - Name: BG_CONQUEST
+      Value: 2
+    - Name: BG_INFERNO
+      Value: 3
+    - Name: BG_CAPTUREFLAG
+      Value: 4
+    - Name: BG_DEATHMATCH
+      Value: 5
+    - Name: BG_STONECONTROL
+      Value: 6
+    - Name: BG_FLAVIUS
+      Value: 7
+    - Name: BG_KVM
+      Value: 8
+    - Name: BG_TIERRA
+      Value: 9
+    - Name: BG_PECORACER
+      Value: 10
+    - Name: BG_PORINGBALL
+      Value: 11
+    - Name: BG_RUSH
+      Value: 12
+    - Name: BG_BOSSNIA
+      Value: 13
+    - Name: BG_DOMINATION
+      Value: 14
+    - Name: BG_EYEOFSTORM
+      Value: 15
 
 Footer:
-  Imports:
-  - Path: db/import/const.yml
+    Imports:
+        - Path: db/import/const.yml

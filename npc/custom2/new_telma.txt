@@ -251,6 +251,7 @@ OnBuyItem:
 	delitem 7829    ,   .@valor;
 	delitem 7828    , .@bravery;
 	delitem 7773    ,  .@battle;
+	getitem @bought_nameid,.@total_items;
 	end;
 
 }

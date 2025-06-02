@@ -15,6 +15,15 @@ services:
             MYSQL_USER: ragnarok
             MYSQL_PASSWORD: ragnarok
 
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+            MYSQL_ROOT_PASSWORD: ragnarok
+        ports:
+            - 8080:80
+
     builder:
         image: "rathena:local"
         container_name: "rathena-builder"

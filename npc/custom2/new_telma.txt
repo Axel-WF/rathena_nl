@@ -242,12 +242,15 @@ OnBuyItem:
 	if ( !.@option ) close;
 
 	next;
-	
-	close2;
-		delitem 7829    ,   .@valor;
-		delitem 7828    , .@bravery;
-		delitem 7773    ,  .@battle;
-		storeitem2 @bought_nameid,.@total_items,1,0,0,254,0,.@cID&0xffff,(.@cID>>16)&0xffff;
+	mes name$;
+	if( checkweight(@bought_nameid,.@total_items ) == 0 ) {
+		mes "Se ve que no puede llevar las cosas que quieres comprar.";
+		mes "Debes almacenar algunos art�culos en su almacenamiento Kafra.";
+		close;
+	}
+	delitem 7829    ,   .@valor;
+	delitem 7828    , .@bravery;
+	delitem 7773    ,  .@battle;
 	end;
 
 }

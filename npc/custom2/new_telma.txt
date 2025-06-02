@@ -266,7 +266,9 @@ OnBuyItem:
 	if ( @opt == 2 ) {
 		set .@cID, getbattleflag("bg_reserved_char_id");
 		set .@Tarjet$, "Battleground";
-		if( checkspace(@bought_nameid,.@total_items,1,0,0,254,0,((.@cID)&0xffff),((.@cID>>16)&0xffff)) == 0 ) {
+		set .@cid_lo, .@cID & 0xFFFF;
+		set .@cid_hi, .@cID >> 16;
+		if ( checkspace(@bought_nameid, .@total_items, 1,0,0,254,0, .@cid_lo, .@cid_hi) == 0 ) {
 			mes "He visto que su Storage no puede aceptar más artículos.";
 			mes "Vaya a su Storage y comprobar el espacio libre.";
 			close;

@@ -433,10 +433,8 @@ Body:
     Title: The Crow of the Fate - 6
   - Id: 2069
     Title: Tierra Gorge Battle
-    TimeLimit: +5mn
   - Id: 2070
     Title: Flavius Battle
-    TimeLimit: +5mn
   - Id: 2071
     Title: Cursed Property
   - Id: 2072
@@ -1873,13 +1871,10 @@ Body:
     Title: Job Change to Gunslinger!
   - Id: 6025
     Title: KVM Guillaume
-    TimeLimit: +5mn
   - Id: 6026
     Title: KVM Croix
-    TimeLimit: +5mn
   - Id: 6027
     Title: KVM Indicator
-    TimeLimit: +5mn
   - Id: 7000
     Title: Job Change to Dancer!
   - Id: 7001

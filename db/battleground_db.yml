@@ -75,7 +75,7 @@ Body:
       Name: Flavius
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
           SuperNovice: true
@@ -105,7 +105,7 @@ Body:
       Name: () Capture The Flag
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -131,7 +131,7 @@ Body:
       Name: () Death Match
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -157,7 +157,7 @@ Body:
       Name: () Stone Control
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -183,7 +183,7 @@ Body:
       Name: Tierra Gorge
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
           SuperNovice: true
@@ -213,7 +213,7 @@ Body:
       Name: () Bossnia
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -237,7 +237,7 @@ Body:
       Name: () Domination
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -263,7 +263,7 @@ Body:
       Name: () Eye of Storm
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -289,7 +289,7 @@ Body:
       Name: Krieger Von Midgard
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       Locations:
           - Map: bat_c02
             StartEvent: KvM02_BG::OnStart
@@ -313,7 +313,7 @@ Body:
       Name: Double Inferno
       MinPlayers: 2
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -341,7 +341,7 @@ Body:
       Name: Conquest
       MinPlayers: 1
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -445,7 +445,7 @@ Body:
       Name: Rush
       MinPlayers: 1
       MinLevel: 80
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -517,7 +517,7 @@ Body:
       Name: Poring Ball
       MinPlayers: 1
       MinLevel: 20
-      Deserter: 60
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -546,7 +546,7 @@ Body:
       MinPlayers: 1
       MaxPlayers: 2
       MinLevel: 20
-      Deserter: 120
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -571,7 +571,7 @@ Body:
       MinPlayers: 1
       MaxPlayers: 2
       MinLevel: 20
-      Deserter: 120
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:
@@ -596,7 +596,7 @@ Body:
       MinPlayers: 1
       MaxPlayers: 2
       MinLevel: 20
-      Deserter: 120
+      Deserter: 0
       JobRestrictions:
           Novice: true
       Locations:

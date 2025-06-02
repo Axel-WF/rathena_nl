@@ -242,44 +242,7 @@ OnBuyItem:
 	if ( !.@option ) close;
 
 	next;
-	mes name$;
-	mes " ";
-	mes "�D�nde quieres las cosas?";
-	if ( select(" - Inventario: - Storage") == 1 ) {
-		if( checkweight(@bought_nameid,.@total_items ) == 0 ) {
-			mes "Se ve que no puede llevar las cosas que quieres comprar.";
-			mes "Debes almacenar algunos art�culos en su almacenamiento Kafra.";
-			close;
-		}
-		delitem 7829    ,   .@valor;
-		delitem 7828    , .@bravery;
-		delitem 7773    ,  .@battle;
-		if ( @opt == 2 ) {
-			set .@cID, getbattleflag("bg_reserved_char_id");
-			set .@Tarjet$, "Battleground";
-			getitem2 @bought_nameid,.@total_items,1,0,0,254,0,.@cID&0xffff,(.@cID>>16)&0xffff;
-		} else
-			getitem @bought_nameid,.@total_items;
-		mes "Listo !!";
-		close;
-	}
-	if ( @opt == 2 ) {
-		set .@cID, getbattleflag("bg_reserved_char_id");
-		set .@Tarjet$, "Battleground";
-		set .@cid_lo, .@cID & 0xFFFF;
-		set .@cid_hi, .@cID >> 16;
-		if ( checkspace(@bought_nameid, .@total_items, 1,0,0,254,0, .@cid_lo, .@cid_hi) == 0 ) {
-			mes "He visto que su Storage no puede aceptar más artículos.";
-			mes "Vaya a su Storage y comprobar el espacio libre.";
-			close;
-		}
-	} else {
-		if( checkspace(@bought_nameid,.@total_items,1,0,0,0,0,0,0) == 0 ) {
-			mes "He visto su inventory no puede aceptar m�s art�culos.";
-			mes "Vaya a inventory compruebe el espacio libre.";
-			close;
-		}
-	}
+	
 	close2;
 		delitem 7829    ,   .@valor;
 		delitem 7828    , .@bravery;

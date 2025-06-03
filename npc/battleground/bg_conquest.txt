@@ -1029,6 +1029,8 @@ OnMatchEnd:
 	if(checkwall("conq_RL01")) delwall "conq_RL01";
 	if(checkwall("conq_RL02")) delwall "conq_RL02";
 	if(checkwall("conq_RL03")) delwall "conq_RL03";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 }
 

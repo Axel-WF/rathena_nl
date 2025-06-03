@@ -229,6 +229,8 @@ OnMatchEnd:
 	donpcevent "CEoSNBW::OnDisable";
 	//donpcevent "CEoSCBW::OnDisable";
 	donpcevent "CEoSSBW::OnDisable";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 
 OnBreak:

@@ -366,6 +366,8 @@ OnMatchEnd:
 	if($@BG10_Team1) { bg_destroy $@BG10_Team1; $@BG10_Team1 = 0; }
 	if($@BG10_Team2) { bg_destroy $@BG10_Team2; $@BG10_Team2 = 0; }
 	bg_unbook "bat_b02";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 }
 

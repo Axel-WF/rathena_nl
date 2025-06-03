@@ -39,12 +39,14 @@ bat_room	mapflag	nosave	SavePoint
 	//=======================================================
 OnInit:
 	set .HappyHourRates, getbattleflag("bg_reward_rates") + 60;	//Happy Hour +60% rewards
+	
 	bindatcmd "joinbg",strnpcinfo(3)+"::OnAtcommand1";		//Join Battle Room
 	bindatcmd "leavebg",strnpcinfo(3)+"::OnAtcommand2";		//Leave Battle Room
 	bindatcmd "bginfo",strnpcinfo(3)+"::OnAtcommand3";		//Knowing which BGs are running and how many players
 	bindatcmd "bghappyhourstart","BG_config::OnClock1800",99,99;	//Start Happy Hour
 	bindatcmd "bghappyhourstop","BG_config::OnClock1900",99,99;	//Stop Happy Hour
 	bindatcmd "startbg","BG_config::OnStart",99,99;		//Start a Battleground
+	goto StartBGLoop;
 	end;
 
 	//=======================================================
@@ -55,11 +57,21 @@ OnStart:
 	mes "Select a Battleground.";
 	.@type = select("- Capture the Flag:- Death Match:- Stone Control:- Bossnia:- Domination:- Eye of Storm:- Double Inferno:- Conquest:- Rush");
 	close2;
-OnClock0030: OnClock0130: OnClock0230: OnClock0330: OnClock0430: OnClock0530: OnClock0630: OnClock0730: OnClock0830: OnClock0930: OnClock1030: OnClock1130:
-OnClock1230: OnClock1330: OnClock1430: OnClock1530: OnClock1630: OnClock1730: OnClock1830: OnClock1930: OnClock2030: OnClock2130: OnClock2230: OnClock2330:
-	if(!.@type)
-		.@type = rand(1,9);
-	do {
+
+StartBGLoop:
+freeloop(1);
+	while (1) {  
+		// announce "[DEBUG]: BG Auto-Start - Checking in 20 seconds... Current BG: " + (($@currentbg$ != "") ? $@currentbg$ : "None"), bc_all, 0x00ffff;
+		sleep 20000;
+
+		
+		if ($@currentbg$ != "") {
+			// There's already a battleground running, continue the loop
+			continue;
+		}
+		
+		.@type = rand(1, 9);  // Pick a random battleground type
+		
 		switch (.@type) {
 			case 1: .@currentbg$ = "Capture The Flag"; break;
 			case 2: .@currentbg$ = "Death Match"; break;
@@ -70,30 +82,38 @@ OnClock1230: OnClock1330: OnClock1430: OnClock1530: OnClock1630: OnClock1730: On
 			case 7: .@currentbg$ = "Double Inferno"; break;
 			case 8: .@currentbg$ = "Conquest"; break;
 			case 9: .@currentbg$ = "Rush"; break;
+			default: .@currentbg$ = "Unknown"; break;
 		}
-	} while ( $@currentbg$ != "" && $@currentbg$ == .@currentbg$);
-	for(.@i = 3; .@i > 0; .@i--) {
-		announce "[Battleground]: "+.@currentbg$+" will start in "+.@i+" minute"+((.@i > 1)?"s":"")+".",bc_all,0xccff00;
-		sleep 60000;
+		
+		announce "[Battleground]: " + .@currentbg$ + " will start in 15 seconds.", bc_all, 0xccff00;
+		sleep 15000;  // Wait 15 seconds
+		
+		$@currentbg$ = .@currentbg$;
+		
+		bg_create2 ((.@type < 7) ? "() " : "") + .@currentbg$;
 	}
-	$@currentbg$ = .@currentbg$;
-	bg_create2 ((.@type < 7)?"() ":"")+.@currentbg$;
+	end;
+freeloop(0);
+
+OnBGEnd:
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 
-	//=======================================================
-	//= BG Happy Hours
-	//=======================================================
-OnClock1000:
-OnClock1200:
-OnClock1800:
-OnClock2000:
+//=======================================================
+//= BG Happy Hours
+//=======================================================
+OnClock1001:
+OnClock1201:
+OnClock1801:
+OnClock2001:
 	announce "Battleground Happy Hour has begun",0,0x00FF00;
 	setbattleflag "bg_reward_rates",.HappyHourRates; // Happy hour Rate
 	end;
-OnClock1100:
-OnClock1300:
-OnClock1900:
-OnClock2100:
+OnClock1101:
+OnClock1301:
+OnClock1901:
+OnClock2101:
 	announce "Battleground Happy Hour is over",0,0x00BFFF;
 	setbattleflag "bg_reward_rates",getbattleflag("bg_reward_rates"); // Back to Normal Rates
 	end;

@@ -203,6 +203,8 @@ OnTimer376000:
 	if($@BG_Team202) { bg_destroy $@BG_Team202; $@BG_Team202 = 0; }
 	$@BG20 = 0;
 	bg_unbook "bg_ball";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 }
 

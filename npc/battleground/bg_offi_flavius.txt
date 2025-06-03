@@ -464,6 +464,8 @@ OnEnable:
 
 OnStop:
 	stopnpctimer;
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 
 OnTimer7000:

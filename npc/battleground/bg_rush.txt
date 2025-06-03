@@ -162,6 +162,8 @@ OnMatchEnd:
 	if($@BG15_Team1) { bg_destroy $@BG15_Team1; $@BG15_Team1 = 0; }
 	if($@BG15_Team2) { bg_destroy $@BG15_Team2; $@BG15_Team2 = 0; }
 	bg_unbook .Castle$;
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 }
 

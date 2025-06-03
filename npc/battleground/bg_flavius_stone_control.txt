@@ -144,6 +144,8 @@ OnMatchEnd:
 	set $@score_stonecontrol_blue, 0;
 	set $@score_stonecontrol_red, 0;
 	bg_unbook "bat_b04";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 
 OnFlash:

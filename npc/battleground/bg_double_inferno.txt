@@ -139,6 +139,8 @@ OnMatchEnd:
 	if($@BG19_Team1) { bg_destroy $@BG19_Team1; $@BG19_Team1 = 0; }
 	if($@BG19_Team2) { bg_destroy $@BG19_Team2; $@BG19_Team2 = 0; }
 	bg_unbook "region_8";
+	announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+	$@currentbg$ = ""; // Clear the current battleground tracker
 	end;
 }
 

@@ -692,6 +692,8 @@ bomberman,0,0,4	script	1Bomb#core	-1,{
 		if(getd("$@bomberman"+.@map+"2")) { bg_destroy getd("$@bomberman"+.@map+"2"); setd("$@bomberman"+.@map+"2"),0; }
 		bg_unbook strnpcinfo(4);
 		do_init();
+		announce "[Battleground]: " + $@currentbg$ + " has ended.", bc_all, 0xff6666;
+		$@currentbg$ = ""; // Clear the current battleground tracker
 		if ( getarg(3,0) ){
 			setd(".BBM_DESTROY"+.@map+""),0;
 			return;

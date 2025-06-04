@@ -1,0 +1,355 @@
+prontera,155,181,4	script	Daily Hunter	634,{
+	
+	// Check if player has an active daily quest
+	.@today = gettime(DT_YYYYMMDD);
+	.@quest_date = daily_hunt_date;
+	
+	mes "[Daily Hunter]";
+	mes "Greetings, brave adventurer!";
+	mes "I offer daily hunting quests to help you gain experience and rewards.";
+	next;
+	
+	// Check if quest is from today
+	if (.@quest_date == .@today && daily_hunt_mob_id > 0) {
+		// Player has active quest for today
+		.@mob_name$ = getmonsterinfo(daily_hunt_mob_id, MOB_NAME);
+		.@progress = daily_hunt_current;
+		.@required = daily_hunt_required;
+		.@changes_left = 5 - daily_hunt_changes;
+		
+		if (daily_hunt_completed) {
+			mes "You've already completed today's hunting quest!";
+			mes "Come back tomorrow for a new challenge.";
+			close;
+		}
+		
+		mes "Your current quest:";
+		mes "^0000FF" + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
+		mes "Progress: ^00FF00" + .@progress + "/" + .@required + "^000000";
+		mes "Quest changes remaining: ^FF00FF" + .@changes_left + "/5^000000";
+		next;
+		
+		if (.@progress >= .@required) {
+			mes "Congratulations! You've completed your hunting quest!";
+			callsub S_GiveReward;
+		} else {
+			mes "What would you like to do?";
+			if (.@changes_left > 0) {
+				switch(select("Continue current quest:Change quest target (" + .@changes_left + " left):Cancel")) {
+				case 1:
+					mes "Keep hunting! You need " + (.@required - .@progress) + " more kills.";
+					break;
+				case 2:
+					mes "Are you sure you want to change your quest target?";
+					mes "This will reset your progress and use one of your changes.";
+					if (select("Yes, change it:No, keep current") == 1) {
+						callsub S_ChangeQuest;
+					} else {
+						mes "Keeping your current quest.";
+					}
+					break;
+				case 3:
+					mes "Come back when you're ready to hunt!";
+					break;
+				}
+			} else {
+				mes "Keep hunting! You need " + (.@required - .@progress) + " more kills.";
+				mes "^FF0000You have no quest changes left for today.^000000";
+			}
+		}
+		close;
+	}
+	
+	// No quest for today or new day - offer new quest
+	if (.@quest_date != .@today) {
+		mes "I have a new hunting quest for you today!";
+		next;
+		
+		// Generate new quest
+		if (callsub(S_GenerateQuest)) {
+			.@mob_name$ = getmonsterinfo(daily_hunt_mob_id, MOB_NAME);
+			.@required = daily_hunt_required;
+			
+			// Reset changes count for new day
+			daily_hunt_changes = 0;
+			
+			mes "Your quest for today:";
+			mes "^FF0000Hunt " + .@required + " " + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
+			mes "^00FF00You can change this quest up to 5 times if needed.^000000";
+			mes "";
+			mes "Good luck, and happy hunting!";
+		} else {
+			mes "Sorry, I couldn't find any suitable monsters for your level.";
+			mes "Please try again later.";
+		}
+		close;
+	}
+	
+	mes "Something went wrong. Please contact an administrator.";
+	close;
+
+// Subroutine to generate a new quest
+S_GenerateQuest:
+	.@player_level = BaseLevel;
+	.@min_level = 1; // Minimum monster level
+	.@max_level = .@player_level + 20; // Maximum monster level
+	
+	// Manual blacklist of monster IDs to exclude from daily quests
+	// Add any problematic monster IDs here
+	setarray .@blacklisted_mobs[0],
+
+		2026; 
+	
+	// Debug: Show level range
+	// // dispbottom "DEBUG: Player Level: " + .@player_level + ", Range: " + .@min_level + "-" + .@max_level;
+	
+	// Clear the valid monsters array
+	deletearray .@valid_monsters[0], getarraysize(.@valid_monsters);
+	.@valid_count = 0;
+	.@checked_count = 0;
+	
+	// Loop through monster database to find valid monsters
+	// Note: This assumes monster IDs are sequential. Adjust range as needed.
+	freeloop(1);
+	for (.@mob_id = 1001; .@mob_id <= 2400; .@mob_id++) {
+		.@mob_level = getmonsterinfo(.@mob_id, MOB_LV);
+		.@checked_count++;
+		
+		// Check if monster exists and is within level range
+		if (.@mob_level > 0 && .@mob_level >= .@min_level && .@mob_level <= .@max_level) {
+			
+			// Manual blacklist check (if you added the blacklist)
+			.@is_blacklisted = 0;
+			for (.@i = 0; .@i < getarraysize(.@blacklisted_mobs); .@i++) {
+				if (.@blacklisted_mobs[.@i] == .@mob_id) {
+					.@is_blacklisted = 1;
+					break;
+				}
+			}
+			
+			if (.@is_blacklisted) {
+				continue;
+			}
+			
+			// Get basic monster info
+			.@mob_name$ = getmonsterinfo(.@mob_id, MOB_NAME);
+			.@mob_base_exp = getmonsterinfo(.@mob_id, MOB_BASEEXP);
+			.@mob_job_exp = getmonsterinfo(.@mob_id, MOB_JOBEXP);
+			
+			// Debug: Show monsters being checked
+			if (.@valid_count < 10) {
+				// dispbottom "DEBUG: ID " + .@mob_id + " (" + .@mob_name$ + ") - Level: " + .@mob_level + ", BaseExp: " + .@mob_base_exp + ", JobExp: " + .@mob_job_exp;
+			}
+			
+			// Skip if monster name is empty or "null"
+			if (.@mob_name$ == "" || .@mob_name$ == "null") {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping ID " + .@mob_id + " - Empty/null name";
+				}
+				continue;
+			}
+			
+			// Skip meta monsters (cannot spawn)
+			if (compare(.@mob_name$, "meta_")) {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - Meta monster";
+				}
+				continue;
+			}
+			
+			// IMPROVED EXPERIENCE FILTERING
+			// Option 1: Basic check - skip monsters with absolutely no experience
+			if (.@mob_base_exp <= 0 && .@mob_job_exp <= 0) {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - No EXP at all";
+				}
+				continue;
+			}
+			
+			// Option 2: More strict - require reasonable experience for the level
+			.@min_base_exp = .@mob_level * 3; // Adjust multiplier as needed
+			if (.@mob_base_exp < .@min_base_exp) {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - Low base EXP (" + .@mob_base_exp + " < " + .@min_base_exp + ")";
+				}
+				continue;
+			}
+			
+			// Check monster class via SQL query to filter out Boss/Guardian monsters
+			query_sql("SELECT `class`, `name_aegis` FROM `mob_db` WHERE `id` = " + .@mob_id, .@mob_class$, .@mob_aegis_name$);
+			
+			// Skip monsters whose AEGIS name starts with "G_"
+			if (compare(.@mob_aegis_name$, "G_")) {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - AEGIS name starts with G_: " + .@mob_aegis_name$;
+				}
+				continue;
+			}
+			
+			// Skip Boss and Guardian monsters (only allow normal monsters with NULL class)
+			if (.@mob_class$ != "" && .@mob_class$ != "NULL") {
+				if (.@valid_count < 5) {
+					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - Class: " + .@mob_class$;
+				}
+				continue;
+			}
+			
+			// All filters passed, add to valid monsters
+			.@valid_monsters[.@valid_count] = .@mob_id;
+			.@valid_count++;
+			
+			// Debug: Show accepted monsters
+			if (.@valid_count <= 10) {
+				// dispbottom "DEBUG: ACCEPTED - ID: " + .@mob_id + " (" + .@mob_name$ + ") Level: " + .@mob_level + " BaseExp: " + .@mob_base_exp;
+			}
+		}
+	}
+	freeloop(0);
+	
+	// Debug: Show final results
+	// // dispbottom "DEBUG: Checked " + .@checked_count + " monsters, found " + .@valid_count + " valid ones";
+	
+	// Check if we found any valid monsters
+	if (.@valid_count == 0) {
+		return 0; // No valid monsters found
+	}
+	
+	// Randomly select a monster from valid ones
+	.@selected_index = rand(.@valid_count);
+	.@selected_mob_id = .@valid_monsters[.@selected_index];
+	.@selected_mob_level = getmonsterinfo(.@selected_mob_id, MOB_LV);
+	
+	// Calculate required kills based on monster level vs player level
+	.@level_diff = .@player_level - .@selected_mob_level;
+	
+	// More kills for easier monsters, fewer for harder ones
+	if (.@level_diff >= 50) {
+		.@kill_count = rand(100, 125); // Much easier monsters
+	} else if (.@level_diff >= 25) {
+		.@kill_count = rand(50, 75); // Easier monsters
+	} else if (.@level_diff >= -2) {
+		.@kill_count = rand(25, 50); // Similar level
+	} else {
+		.@kill_count = rand(10, 20); // Harder monsters
+	}
+	
+	// Set quest variables
+	daily_hunt_mob_id = .@selected_mob_id;
+	daily_hunt_required = .@kill_count;
+	daily_hunt_current = 0;
+	daily_hunt_date = gettime(DT_YYYYMMDD);
+	daily_hunt_completed = 0;
+	
+	return 1; // Success
+
+// Subroutine to give rewards
+S_GiveReward:
+	.@mob_level = getmonsterinfo(daily_hunt_mob_id, MOB_LV);
+	.@required = daily_hunt_required;
+	
+	// Calculate base experience reward
+	.@base_exp = (.@mob_level * .@required * 100);
+	.@job_exp = (.@mob_level * .@required * 50);
+	
+	// Bonus for harder monsters
+	.@level_diff = BaseLevel - .@mob_level;
+	if (.@level_diff < 0) {
+		.@abs_diff = .@level_diff * -1; // Manual absolute value
+		.@base_exp = .@base_exp * (2 + .@abs_diff / 5);
+		.@job_exp = .@job_exp * (2 + .@abs_diff / 5);
+	}
+	
+	// Give rewards
+	getexp .@base_exp, .@job_exp;
+	
+	// Additional Zeny reward
+	.@zeny_reward = .@mob_level * .@required * 10;
+	Zeny += .@zeny_reward;
+	
+	// Mark as completed
+	daily_hunt_completed = 1;
+	
+	mes "^00FF00Rewards received:^000000";
+	mes "Base EXP: ^0000FF" + .@base_exp + "^000000";
+	mes "Job EXP: ^0000FF" + .@job_exp + "^000000";
+	mes "Zeny: ^0000FF" + .@zeny_reward + "^000000";
+	
+	return;
+
+// Subroutine to change quest target
+S_ChangeQuest:
+	// Generate new quest
+	if (callsub(S_GenerateQuest)) {
+		.@mob_name$ = getmonsterinfo(daily_hunt_mob_id, MOB_NAME);
+		.@required = daily_hunt_required;
+		
+		// Reset progress and increment changes count
+		daily_hunt_current = 0;
+		daily_hunt_changes++;
+		
+		mes "Quest changed successfully!";
+		mes "New target: ^FF0000" + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
+		mes "Required kills: ^00FF00" + .@required + "^000000";
+		mes "Changes remaining: ^FF00FF" + (5 - daily_hunt_changes) + "/5^000000";
+	} else {
+		mes "Sorry, I couldn't find another suitable monster for your level.";
+		mes "Keeping your current quest.";
+	}
+	return;
+
+// Event triggered when player kills a monster
+OnNPCKillEvent:
+	// Check if player has an active quest
+	if (daily_hunt_mob_id <= 0 || daily_hunt_completed) {
+		end;
+	}
+	
+	// Check if killed monster matches quest target
+	if (killedrid == daily_hunt_mob_id) {
+		daily_hunt_current++;
+		
+		.@mob_name$ = getmonsterinfo(daily_hunt_mob_id, MOB_NAME);
+		.@progress = daily_hunt_current;
+		.@required = daily_hunt_required;
+		
+		// Notify player of progress
+		dispbottom "Daily Quest: " + .@mob_name$ + " (" + daily_hunt_mob_id + ") killed! (" + .@progress + "/" + .@required + ")";
+		
+		// Check if quest is completed
+		if (.@progress >= .@required) {
+			dispbottom "Daily hunting quest completed! Return to the Daily Hunter for your reward!";
+		}
+	}
+	end;
+
+// Initialize NPC and bind GM command
+OnInit:
+	bindatcmd "resetdailyquest", strnpcinfo(3) + "::OnResetDailyQuest", 80, 80;
+	end;
+
+// GM Command to reset a player's daily quest
+OnResetDailyQuest:
+	if (.@atcmd_numparameters < 1) {
+		dispbottom "Usage: @resetdailyquest <CharacterName>";
+		end;
+	}
+	
+	.@target_name$ = .@atcmd_parameters$[0];
+	.@target_cid = convertpcinfo(.@target_name$, CPC_CHAR);
+	
+	if (.@target_cid == 0) {
+		dispbottom "Character '" + .@target_name$ + "' not found.";
+		end;
+	}
+	
+	// Clear all daily quest variables for the target character
+	set daily_hunt_mob_id, 0, .@target_cid;
+	set daily_hunt_required, 0, .@target_cid;
+	set daily_hunt_current, 0, .@target_cid;
+	set daily_hunt_date, 0, .@target_cid;
+	set daily_hunt_completed, 0, .@target_cid;
+	set daily_hunt_changes, 0, .@target_cid;
+	
+	dispbottom "Daily quest data cleared for character: " + .@target_name$;
+	end;
+}

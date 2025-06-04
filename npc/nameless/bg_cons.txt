@@ -46,7 +46,7 @@ prontera,158,176,4	script	BG Consumables Shop	641,{
 	// Build menu
 	set .@menu$, "";
 	for(set .@i, 0; .@i < getarraysize(.@items); set .@i, .@i + 1) {
-		set .@menu$, .@menu$ + .@amounts[.@i] + "x " + getitemname(.@items[.@i]) + " (" + .@prices[.@i] + "z):";
+		set .@menu$, .@menu$ + .@amounts[.@i] + "x " + getitemname(.@items[.@i]) + " (" + .@prices[.@i] + " Badges):";
 	}
 	
 	set .@choice, select(.@menu$) - 1;

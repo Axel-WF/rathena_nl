@@ -36,7 +36,7 @@ prontera,158,176,4	script	BG Consumables Shop	641,{
 		
 	case 4: // Info
 		mes "[Consumables Shop]";
-		mes "Battleground Items: Only work in BG maps";
+		mes "Battleground Items: Only work in BG and some PvP maps";
 		mes "WoE/GvG Items: Only work during WoE/GvG";
 		mes "Regular Items: Work everywhere";
 		mes "Bulk Purchase: Buy multiple sets at once!";

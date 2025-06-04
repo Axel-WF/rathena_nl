@@ -28,6 +28,15 @@ prontera,153,183,6	script	Refiner Pro Max	642,{
 			.@refine_level = @inventorylist_refine[.@i];
 			.@item_type = getiteminfo(.@item_id, ITEMINFO_TYPE);
 			.@item_location = getiteminfo(.@item_id, ITEMINFO_LOCATIONS);
+
+			// === NEW: Check database first if item is actually refineable ===
+			.@refineable = 0;
+			query_sql("SELECT `refineable` FROM `item_db` WHERE `id` = " + .@item_id, .@refineable);
+			
+			// Skip item if not refineable according to database
+			if (!.@refineable) {
+				continue;
+			}
 			
 			// Check if item is refinable and matches our desired equipment types
 			.@is_refinable = 0;

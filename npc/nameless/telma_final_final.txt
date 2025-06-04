@@ -5,7 +5,7 @@ prontera,158,176,4	script	BG Consumables Shop	641,{
 	mes "What would you like to buy?";
 	next;
 	
-	switch(select("Battleground Items:WoE/GvG Items:Regular Items:Info")) {
+	switch(select("BG/PvP Items:WoE/GvG Items:Regular Items:Info")) {
 	
 	case 1: // Battleground Items 
 		// Yggdrasil Berry, Green Potion, Concentration Potion

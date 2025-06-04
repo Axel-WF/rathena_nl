@@ -1,0 +1,255 @@
+prontera,158,176,4	script	BG Consumables Shop	641,{
+
+	mes "[Consumables Shop]";
+	mes "Welcome! I sell items for different purposes.";
+	mes "What would you like to buy?";
+	next;
+	
+	switch(select("Battleground Items:WoE/GvG Items:Regular Items:Info")) {
+	
+	case 1: // Battleground Items 
+		// Yggdrasil Berry, Green Potion, Concentration Potion
+		setarray .@items[0], 607, 506, 645; 
+		setarray .@prices[0], 5, 3, 8;  // Prices in badges
+		setarray .@amounts[0], 1, 5, 1;      // Amount per purchase
+		set .@char_id, getbattleflag("bg_reserved_char_id");  // 999996
+		set .@restriction$, "Battleground maps only";
+		break;
+		
+	case 2: // WoE/GvG Items
+		// Yggdrasil Seed, Berserk Potion, Awakening Potion
+		setarray .@items[0], 608, 657, 656;  
+		setarray .@prices[0], 8, 10, 12;
+		setarray .@amounts[0], 1, 1, 1;
+		set .@char_id, getbattleflag("woe_reserved_char_id");  // 999997
+		set .@restriction$, "WoE/GvG maps only";
+		break;
+		
+	case 3: // Regular Items (no restriction)
+		// Red Potion, Orange Potion, Yellow Potion
+		setarray .@items[0], 501, 502, 503;  
+		setarray .@prices[0], 1, 2, 3;
+		setarray .@amounts[0], 10, 10, 10;
+		set .@char_id, 0;
+		set .@restriction$, "Usable everywhere";
+		break;
+		
+	case 4: // Info
+		mes "[Consumables Shop]";
+		mes "Battleground Items: Only work in BG maps";
+		mes "WoE/GvG Items: Only work during WoE/GvG";
+		mes "Regular Items: Work everywhere";
+		mes "Bulk Purchase: Buy multiple sets at once!";
+		close;
+	}
+	
+	// Build menu
+	set .@menu$, "";
+	for(set .@i, 0; .@i < getarraysize(.@items); set .@i, .@i + 1) {
+		set .@menu$, .@menu$ + .@amounts[.@i] + "x " + getitemname(.@items[.@i]) + " (" + .@prices[.@i] + "z):";
+	}
+	
+	set .@choice, select(.@menu$) - 1;
+	
+	mes "[Consumables Shop]";
+	mes "Item: ^FF0000" + .@amounts[.@choice] + "x " + getitemname(.@items[.@choice]) + "^000000";
+	mes "Price: ^FF0000" + .@prices[.@choice] + "^000000 Badges per set";
+	mes "Restriction: ^FF0000" + .@restriction$ + "^000000";
+	mes "";
+	mes "How many sets would you like to buy?";
+	mes "^888888(Enter 1 for single purchase, or higher for bulk)^000000";
+	next;
+	
+	input .@quantity;
+	
+	// Validate quantity input
+	if(.@quantity < 1 || .@quantity > 999) {
+		mes "[Consumables Shop]";
+		mes "Invalid quantity! Please enter 1-999.";
+		close;
+	}
+	
+	// Calculate total cost and items
+	set .@total_cost, .@prices[.@choice] * .@quantity;
+	set .@total_items, .@amounts[.@choice] * .@quantity;
+	
+	// Show purchase summary
+	mes "[Consumables Shop]";
+	mes "Purchase Summary:";
+	mes "Item: ^FF0000" + getitemname(.@items[.@choice]) + "^000000";
+	mes "Quantity: ^FF0000" + .@quantity + "^000000 sets (^FF0000" + .@total_items + "^000000 total items)";
+	mes "Total Cost: ^FF0000" + .@total_cost + "^000000 Badges";
+	mes "Restriction: ^FF0000" + .@restriction$ + "^000000";
+	mes "";
+	mes "Do you want to proceed with this purchase?";
+	next;
+	
+	if(select("Yes, buy " + .@quantity + " sets:No, cancel") == 2) {
+		mes "[Consumables Shop]";
+		mes "Come back anytime!";
+		close;
+	}
+	
+	// Check if player has enough badges
+	set .@total_badges, countitem(7828) + countitem(7829) + countitem(7773);
+	if(.@total_badges < .@total_cost) {
+		mes "[Consumables Shop]";
+		mes "Required Badges: " + .@total_cost + "";
+		mes "You have: ^0000FF" + .@total_badges + "^000000 badges";
+		mes "You need ^FF0000" + (.@total_cost - .@total_badges) + "^000000 more badges!";
+		mes "Participate in Battleground or WoE to earn badges.";
+		close;
+	}
+	
+	// Check weight/space for bulk purchase
+	if(checkweight(.@items[.@choice], .@total_items) == 0) {
+		mes "[Consumables Shop]";
+		mes "You can't carry that much weight!";
+		mes "Total items: ^FF0000" + .@total_items + "^000000";
+		mes "Please free up some inventory space.";
+		close;
+	}
+	
+	// Badge payment system with bulk support
+	set .@vcount, .@total_cost;
+	set .@i7828, 0; set .@i7829, 0; set .@i7773, 0;
+
+	// Bravery Badges (7828)
+	if(countitem(7828) > 0) {
+		mes "[Consumables Shop]";
+		mes "Required Badges: ^0000FF" + .@vcount + "^000000";
+		mes "You have: " + countitem(7828) + " Bravery Badges";
+		mes "Bravery Badges to spend:";
+		next;
+		input .@i7828;
+		if(.@i7828 < 0 || .@i7828 > countitem(7828)) {
+			mes "[Consumables Shop]";
+			mes "Invalid number... Sorry.";
+			close;
+		}
+		if(.@i7828 > .@vcount) set .@i7828, .@vcount;
+		set .@vcount, .@vcount - .@i7828;
+	}
+
+	// Valor Badges (7829)
+	if(.@vcount && countitem(7829) > 0) {
+		mes "[Consumables Shop]";
+		mes "Remaining Required: ^0000FF" + .@vcount + "^000000";
+		mes "You have: " + countitem(7829) + " Valor Badges";
+		mes "Valor Badges to spend:";
+		next;
+		input .@i7829;
+		if(.@i7829 < 0 || .@i7829 > countitem(7829)) {
+			mes "[Consumables Shop]";
+			mes "Invalid number... Sorry.";
+			close;
+		}
+		if(.@i7829 > .@vcount) set .@i7829, .@vcount;
+		set .@vcount, .@vcount - .@i7829;
+	}
+
+	// War Badges (7773)
+	if(.@vcount && countitem(7773) > 0) {
+		mes "[Consumables Shop]";
+		mes "Remaining Required: ^0000FF" + .@vcount + "^000000";
+		mes "You have: " + countitem(7773) + " War Badges";
+		mes "War Badges to spend:";
+		next;
+		input .@i7773;
+		if(.@i7773 < 0 || .@i7773 > countitem(7773)) {
+			mes "[Consumables Shop]";
+			mes "Invalid number... Sorry.";
+			close;
+		}
+		if(.@i7773 > .@vcount) set .@i7773, .@vcount;
+		set .@vcount, .@vcount - .@i7773;
+	}
+
+	// Final badge check
+	if(.@vcount != 0) {
+		mes "[Consumables Shop]";
+		mes "Sorry, not enough badges to pay the total cost.";
+		mes "Still need: " + .@vcount + " more badges.";
+		close;
+	}
+
+	// Final confirmation with payment breakdown
+	mes "[Consumables Shop]";
+	mes "Final Purchase Confirmation:";
+	mes "Buying: ^FF0000" + .@quantity + "^000000 sets of ^FF0000" + getitemname(.@items[.@choice]) + "^000000";
+	mes "Total Items: ^FF0000" + .@total_items + "^000000";
+	mes "Payment Breakdown:";
+	if(.@i7828 > 0) mes "^FF0000" + .@i7828 + "^000000 Bravery Badges";
+	if(.@i7829 > 0) mes "^FF0000" + .@i7829 + "^000000 Valor Badges";
+	if(.@i7773 > 0) mes "^FF0000" + .@i7773 + "^000000 War Badges";
+	next;
+	
+	if(select("Confirm Bulk Purchase:Cancel") == 2) {
+		mes "[Consumables Shop]";
+		mes "Come back anytime!";
+		close;
+	}
+
+	// Process badge payment
+	delitem 7828, .@i7828;
+	delitem 7829, .@i7829;
+	delitem 7773, .@i7773;
+	
+	// Give items with proper signature (bulk processing)
+	if(.@char_id > 0) {
+		// Signed items (BG or WoE exclusive) - give all at once
+		getitem2 .@items[.@choice], .@total_items, 1, 0, 0, 254, 0, .@char_id&0xffff, (.@char_id>>16)&0xffff;
+	} else {
+		// Regular items (no signature) - give all at once
+		getitem .@items[.@choice], .@total_items;
+	}
+	
+	mes "[Consumables Shop]";
+	mes "Bulk purchase successful!";
+	mes "You received ^FF0000" + .@total_items + "^000000 items total!";
+	mes "Remember: These items " + .@restriction$;
+	
+	// Show purchase summary
+	mes "";
+	mes "^888888Purchase completed:^000000";
+	mes "^888888- " + .@quantity + " sets of " + getitemname(.@items[.@choice]) + "^000000";
+	mes "^888888- Total cost: " + .@total_cost + " badges^000000";
+	close;
+}
+
+// Enhanced function for bulk badge-based purchases
+function	script	GiveSignedItemBulk	{
+	// Parameters: item_id, amount_per_set, char_id, quantity
+	set .@item_id, getarg(0);
+	set .@amount_per_set, getarg(1);
+	set .@char_id, getarg(2);
+	set .@quantity, getarg(3, 1); // Default to 1 if not specified
+	
+	set .@total_amount, .@amount_per_set * .@quantity;
+	
+	if(.@char_id > 0) {
+		// To inventory with signature - give all at once
+		getitem2 .@item_id, .@total_amount, 1, 0, 0, 254, 0, .@char_id&0xffff, (.@char_id>>16)&0xffff;
+	} else {
+		// Regular item to inventory - give all at once
+		getitem .@item_id, .@total_amount;
+	}
+	return;
+}
+
+// Enhanced single item function (backwards compatibility)
+function	script	GiveSignedItem	{
+	// Parameters: item_id, amount, char_id
+	set .@item_id, getarg(0);
+	set .@amount, getarg(1);
+	set .@char_id, getarg(2);
+	
+	callfunc("GiveSignedItemBulk", .@item_id, .@amount, .@char_id, 1);
+	return;
+}
+
+// Usage examples:
+// callfunc("GiveSignedItem", 607, 1, getbattleflag("bg_reserved_char_id"));  // Single BG item
+// callfunc("GiveSignedItemBulk", 607, 1, getbattleflag("bg_reserved_char_id"), 5);  // 5 sets of BG items
+// callfunc("GiveSignedItemBulk", 608, 1, getbattleflag("woe_reserved_char_id"), 3); // 3 sets of WoE items
+// callfunc("GiveSignedItemBulk", 501, 10, 0, 2);  // 2 sets of regular items (20 total)

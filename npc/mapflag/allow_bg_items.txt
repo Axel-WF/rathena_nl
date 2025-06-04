@@ -1,0 +1,3 @@
+prontera	mapflag	bg_consume
+bat_b01	mapflag	bg_consume
+bat_c01	mapflag	bg_consume

@@ -153,11 +153,11 @@ OnLoginCmnd:
 		}
 		if(.Mode & 2 && (.@TT[1])){
 			#Loyalty += .@TT[1];
-			message strcharinfo(0),"[Daily Rewards]: Recieved "+ .@TT[1] +" "+.Points$;
+			message strcharinfo(0),"[Daily Rewards]: Received "+ .@TT[1] +" "+.Points$;
 		}
 		if(.Mode & 4 && (.@TT[0])){
 			zeny += .@TT[0];
-			message strcharinfo(0),"[Daily Rewards]: Recieved "+ .@TT[0] +"z";
+			message strcharinfo(0),"[Daily Rewards]: Received "+ .@TT[0] +"z";
 		}
 		if(.Mode & 8 && (.@TT[3] || .@TT[4]))
 			getexp .@TT[3], .@TT[4];

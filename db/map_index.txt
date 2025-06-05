@@ -1174,3 +1174,5 @@ bg_ball
 bomberman
 bg_bomber
 bg_bomber2
+maze
+1@zombie

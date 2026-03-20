@@ -1,0 +1,54 @@
+-	script	HeadgearRecipeUZ	-1,{
+OnInit:
+	freeloop(1);
+
+	// Umbrella Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5316,6075,30,7151,30,1059,30,7038,20,35605,90;
+	// Valkyrie Feather Band [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5256,916,30,949,30,7751,20,991,20,35605,90;
+	// Valkyrie Helmet [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5826,732,1,916,30,7751,20,35602,1,35605,250;
+	// Vane Hairpin [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5285,7064,30,1039,20,7063,20,7038,20,35605,90;
+	// Vanilmirth Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5289,740,20,7117,20,7015,10,991,20,35600,1,35605,175;
+	// Victorious Coronet [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5805,732,1,969,10,7754,20,991,20,35600,1,35605,175;
+	// Victory FB Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5858,7200,30,7038,30,1059,20,35602,1,35605,250;
+	// Voyage_Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5578,7065,30,7064,20,7751,20,7200,20,35605,90;
+	// W Doll Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5345,7206,20,740,30,35602,1,35605,250;
+	// Wandering Minstrel Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5188,7301,20,901,30,1094,20,7038,20,35605,90;
+	// Water Lily Crown [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5284,748,10,7293,30,722,10,991,20,35600,1,35605,175;
+	// White Musang Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 18612,914,30,7063,20,7263,10,7751,20,35605,90;
+	// White Ribbon [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5197,901,30,1094,20,7751,20,722,10,35600,1,35605,175;
+	// White Snake Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5411,926,30,1063,20,7006,20,1039,20,35605,90;
+	// Wild Rose Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5557,749,1,748,10,7293,30,712,20,35600,1,35605,175;
+	// Witch's Pumpkin Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 18656,1062,30,7225,30,1070,20,7182,20,35600,1,35605,175;
+	// Yellow Bandana [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5277,969,10,901,30,7577,20,7200,20,35600,1,35605,175;
+	// Yellow Drooping Cat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5234,7263,20,7206,20,7577,20,914,20,35600,1,35605,175;
+	// Yellow Mage Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5242,991,30,7576,20,7117,20,7112,20,35600,1,35605,175;
+	// Yellow Ribbon [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5278,901,30,1094,30,1013,20,7038,20,35600,1,35605,175;
+	// Yellow Ribbon [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5192,901,20,1094,20,7751,20,7293,20,35600,1,35605,175;
+	// Yoyo Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5385,7011,30,1026,30,6020,20,705,20,35605,90;
+	// Zaha Doll Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5464,740,30,7206,20,7038,30,7166,20,35605,90;
+
+	freeloop(0);
+	end;
+}

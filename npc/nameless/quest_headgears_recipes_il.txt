@@ -1,0 +1,68 @@
+-	script	HeadgearRecipeIL	-1,{
+OnInit:
+	freeloop(1);
+
+	// I Love China [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5423,969,10,901,30,7182,30,35602,1,35605,250;
+	// Icecream Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5500,995,1,6075,30,7576,20,748,10,35600,1,35605,175;
+	// Imp Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5658,1038,30,1039,30,6089,20,7315,20,35605,90;
+	// Indian Headband [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5071,947,30,916,40,919,30,901,20,35605,90;
+	// Jasper Crest [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5396,732,1,719,1,721,20,7263,10,35600,1,35605,175;
+	// Joker Jester [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5150,741,1,740,30,7754,20,901,20,35600,1,35605,175;
+	// Jumping Poring [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5335,909,100,938,50,1000,20,1026,20,35605,90;
+	// Kafra Band [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5020,741,1,1059,40,7038,30,7200,20,35600,1,35605,175;
+	// Karada Meguricha Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5426,6075,30,7301,20,7038,20,7166,20,35605,90;
+	// Kerchief [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5322,1059,40,7038,30,7200,20,748,10,35600,1,35605,175;
+	// Kettle Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5291,999,50,998,50,1002,30,7319,20,35605,90;
+	// King Tiger Doll Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5497,7206,20,7263,20,914,30,1028,20,35605,90;
+	// Koneko Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5372,7263,20,7206,20,914,30,35602,1,35605,250;
+	// Kwati Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5537,722,1,7298,30,1026,30,712,20,35600,1,35605,175;
+	// Large Hisbiscus [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5311,712,30,7293,20,748,10,7298,30,35600,1,35605,175;
+	// Laurel Wreath [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5185,7298,40,712,20,7293,20,969,5,35600,1,35605,175;
+	// Lazy Smokie [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5084,1026,50,919,20,914,20,7100,20,35605,90;
+	// Leaf Cat Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5555,7298,50,7263,20,914,20,7100,20,35605,90;
+	// Legionnaire Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5418,999,50,998,50,7319,20,35602,1,35605,250;
+	// Lif Doll Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5253,7206,20,7268,20,740,30,7166,20,35605,90;
+	// Linguistic Book Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5422,7112,40,7111,40,7118,20,7347,20,35605,90;
+	// Little Angel Doll [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5324,741,1,7206,20,916,50,7166,20,35600,1,35605,175;
+	// Love Chick Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5822,916,50,7101,40,914,30,35602,1,35605,250;
+	// Love Dad Cap [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5209,1059,40,901,20,7182,30,712,20,35605,90;
+	// Love Daddy Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5489,1059,40,901,20,7182,30,7293,20,35605,90;
+	// Love Flower Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5803,712,30,6086,20,7293,20,748,10,35605,90;
+	// Love Valentine's Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5393,969,5,7293,20,748,10,901,20,35600,1,35605,175;
+	// Lunatic Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5527,741,1,914,60,949,40,7168,10,35600,1,35605,175;
+	// Luoyang NewYear Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5392,969,5,901,30,7182,30,7293,20,35605,90;
+	// Luxury Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5558,969,10,7576,20,7263,20,7754,20,35605,90;
+
+	freeloop(0);
+	end;
+}

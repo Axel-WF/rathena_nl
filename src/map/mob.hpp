@@ -230,6 +230,30 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 };
 
+struct s_mob_essence_drop_tier {
+	t_itemid item_id = 0;
+	uint32 rate = 0;
+	std::vector<uint32> mob_ids;
+};
+
+struct s_mob_essence_drop {
+	uint16 id = 0;
+	t_itemid common_item_id = 0;
+	uint32 common_rate = 0;
+	std::vector<uint32> common_blacklist;
+	s_mob_essence_drop_tier mvp_tier[3];
+};
+
+class MobEssenceDropDatabase : public TypesafeYamlDatabase<uint16, s_mob_essence_drop> {
+public:
+	MobEssenceDropDatabase() : TypesafeYamlDatabase("MOB_ESSENCE_DROP_DB", 1) {
+
+	}
+
+	const std::string getDefaultLocation() override;
+	uint64 parseBodyNode(const ryml::NodeRef& node) override;
+};
+
 struct spawn_info {
 	unsigned short mapindex;
 	unsigned short qty;
@@ -283,6 +307,7 @@ public:
 };
 
 extern MobDatabase mob_db;
+extern MobEssenceDropDatabase mob_essence_drop_db;
 
 struct mob_data {
 	struct block_list bl;

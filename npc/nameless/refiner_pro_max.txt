@@ -1,565 +1,483 @@
 prontera,153,183,6	script	Refiner Pro Max	642,{
 
 	mes "[Bulk Refiner]";
-	mes "Hello! Let me check if you have any items that can be refined.";
+	mes "I only process ^0055FFunequipped^000000 equipment.";
+	mes "Choose an item and I will refine each eligible copy one by one.";
 	next;
-	
-	// Initialize variables
-	.@refinable_count = 0;
-	.@menu_options$ = "";
-	
-	// First, load the player's inventory into arrays
-	freeloop(1);
-	getinventorylist();
-	freeloop(0);
-	
-	// Arrays to store unique item data
-	deletearray .@unique_items[0], 128;
-	
-	// Loop through inventory to find refinable items
-	freeloop(1);
-	for(.@i = 0; .@i < @inventorylist_count; .@i++) {
-		
-		// Check if there's an item in this slot
-		if(@inventorylist_id[.@i] > 0) {
-			
-			// Get the item's information
-			.@item_id = @inventorylist_id[.@i];
-			.@refine_level = @inventorylist_refine[.@i];
-			.@item_type = getiteminfo(.@item_id, ITEMINFO_TYPE);
-			.@item_location = getiteminfo(.@item_id, ITEMINFO_LOCATIONS);
 
-			// === NEW: Check database first if item is actually refineable ===
-			.@refineable = 0;
-			query_sql("SELECT `refineable` FROM `item_db` WHERE `id` = " + .@item_id, .@refineable);
-			
-			// Skip item if not refineable according to database
-			if (!.@refineable) {
-				continue;
+	.@refinable_count = 0;
+	deletearray .@unique_items[0], 128;
+	deletearray .@unique_counts[0], 128;
+
+	getinventorylist();
+	freeloop(1);
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		if (@inventorylist_id[.@i] <= 0)
+			continue;
+		if (@inventorylist_equip[.@i])
+			continue;
+
+		.@item_id = @inventorylist_id[.@i];
+		.@refine_level = @inventorylist_refine[.@i];
+
+		if (.@refine_level >= 10)
+			continue;
+
+		.@item_type = getiteminfo(.@item_id, ITEMINFO_TYPE);
+		.@item_location = getiteminfo(.@item_id, ITEMINFO_LOCATIONS);
+		.@refineable = 0;
+		query_sql(
+			"SELECT COALESCE(" +
+				"(SELECT `refineable` FROM `item_db2` WHERE `id` = " + .@item_id + " LIMIT 1)," +
+				"(SELECT `refineable` FROM `item_db` WHERE `id` = " + .@item_id + " LIMIT 1)," +
+				"0)",
+			.@refineable
+		);
+
+		if (!.@refineable)
+			continue;
+
+		.@is_refinable = 0;
+		if (.@item_type == IT_WEAPON) {
+			.@is_refinable = 1;
+		} else if (.@item_type == IT_ARMOR) {
+			if ((.@item_location & EQP_ARMOR) ||
+				(.@item_location & EQP_HEAD_TOP) ||
+				(.@item_location & EQP_HEAD_MID) ||
+				(.@item_location & EQP_HEAD_LOW) ||
+				(.@item_location & EQP_SHOES) ||
+				(.@item_location & EQP_GARMENT) ||
+				(.@item_location & EQP_HAND_L)) {
+				.@is_refinable = 1;
 			}
-			
-			// Check if item is refinable and matches our desired equipment types
-			.@is_refinable = 0;
-			
-			// Check for weapons (right hand or left hand weapons)
-			if(.@item_type == IT_WEAPON) {
-				if(.@item_location & EQP_HAND_R || .@item_location & EQP_HAND_L) {
-					.@is_refinable = 1;
-				}
+		}
+
+		if (!.@is_refinable)
+			continue;
+
+		.@already_added = 0;
+		for (.@k = 0; .@k < .@refinable_count; .@k++) {
+			if (.@unique_items[.@k] == .@item_id) {
+				.@unique_counts[.@k] += @inventorylist_amount[.@i];
+				.@already_added = 1;
+				break;
 			}
-			// Check for specific armor types
-			else if(.@item_type == IT_ARMOR) {
-				// Body armor
-				if(.@item_location & EQP_ARMOR) {
-					.@is_refinable = 1;
-				}
-				// Headgear (top, mid, low)
-				else if(.@item_location & EQP_HEAD_TOP) {
-					.@is_refinable = 1;
-				}
-				// Shoes
-				else if(.@item_location & EQP_SHOES) {
-					.@is_refinable = 1;
-				}
-				// Garments
-				else if(.@item_location & EQP_GARMENT) {
-					.@is_refinable = 1;
-				}
-				// Shields (left hand armor items)
-				else if(.@item_location & EQP_HAND_L) {
-					.@is_refinable = 1;
-				}
-			}
-			
-			// If item is refinable and not already at max refine (+10)
-			if(.@is_refinable && .@refine_level < 10) {
-				
-				// Check if we've already found this item type
-				.@already_added = 0;
-				for(.@k = 0; .@k < .@refinable_count; .@k++) {
-					if(.@unique_items[.@k] == .@item_id) {
-						.@already_added = 1;
-						break;
-					}
-				}
-				
-				// If this is a new unique item, add it to our lists
-				if(.@already_added == 0) {
-					.@unique_items[.@refinable_count] = .@item_id;
-					.@refinable_count++;
-					
-					// Build menu option string (just item name, no refine level)
-					.@item_name$ = getitemname(.@item_id);
-					.@menu_options$ += .@item_name$ + ":";
-				}
-			}
+		}
+
+		if (!.@already_added) {
+			.@unique_items[.@refinable_count] = .@item_id;
+			.@unique_counts[.@refinable_count] = @inventorylist_amount[.@i];
+			.@refinable_count++;
 		}
 	}
 	freeloop(0);
-	
-	// Check if we found any refinable items
-	if(.@refinable_count == 0) {
+
+	if (!.@refinable_count) {
 		mes "[Bulk Refiner]";
-		mes "Sorry, but you don't have any items that can be refined right now.";
-		mes "I can only refine: Weapons, Armor, Headgear, Shoes, Garments, and Shields.";
-		mes "Make sure these items are not already +10!";
+		mes "You do not have any ^0055FFunequipped^000000 refinable items below +10.";
 		close;
 	}
-	
-	// Show selection menu
-	mes "[Bulk Refiner]";
-	mes "Great! You have ^00FF00" + .@refinable_count + "^000000 items that can be refined.";
-	mes "Which item would you like to refine?";
-	next;
-	
-	// Add exit option to menu
+
+	.@menu_options$ = "";
+	for (.@i = 0; .@i < .@refinable_count; .@i++) {
+		.@menu_options$ += getitemname(.@unique_items[.@i]) + " (" + .@unique_counts[.@i] + "):";
+	}
 	.@menu_options$ += "Cancel";
-	
-	// Show the selection menu
+
+	mes "[Bulk Refiner]";
+	mes "I found ^00AA00" + .@refinable_count + "^000000 eligible item types.";
+	mes "Which one should I process?";
+	next;
+
 	.@selected = select(.@menu_options$) - 1;
-	
-	// Check if player selected cancel
-	if(.@selected == .@refinable_count) {
+	if (.@selected == .@refinable_count) {
 		mes "[Bulk Refiner]";
-		mes "Come back anytime!";
+		mes "Come back when you are ready.";
 		close;
 	}
-	
-	// Get the selected item ID from our unique items array
+
 	.@selected_item_id = .@unique_items[.@selected];
 	.@selected_name$ = getitemname(.@selected_item_id);
-	
-	// === NEW: Determine refining material and costs ===
 	.@item_type = getiteminfo(.@selected_item_id, ITEMINFO_TYPE);
-	.@item_location = getiteminfo(.@selected_item_id, ITEMINFO_LOCATIONS);
-	
-	// Initialize material requirements
-	.@material_id = 0;        // Item ID of required material
-	.@material_name$ = "";    // Name of material for display
-	.@base_fee = 0;          // Base zeny fee per refine attempt
-	
-	if(.@item_type == IT_WEAPON) {
-		// Get weapon level using ITEMINFO_WEAPONLEVEL
+
+	.@material_id = 0;
+	.@material_name$ = "";
+	.@base_fee = 0;
+	.@weapon_level = 0;
+
+	if (.@item_type == IT_WEAPON) {
 		.@weapon_level = getiteminfo(.@selected_item_id, ITEMINFO_WEAPONLEVEL);
-		
-		// Set material based on weapon level
-		if(.@weapon_level == 1) {
-			.@material_id = 1010;      // Phracon
+
+		if (.@weapon_level == 1) {
+			.@material_id = 1010;
 			.@material_name$ = "Phracon";
 			.@base_fee = 50;
-		}
-		else if(.@weapon_level == 2) {
-			.@material_id = 1011;      // Emveretarcon
+		} else if (.@weapon_level == 2) {
+			.@material_id = 1011;
 			.@material_name$ = "Emveretarcon";
 			.@base_fee = 200;
-		}
-		else if(.@weapon_level == 3) {
-			.@material_id = 984;       // Oridecon
-			.@material_name$ = "Oridecon";
-			.@base_fee = 5000;
-		}
-		else if(.@weapon_level == 4) {
-			.@material_id = 984;       // Oridecon
-			.@material_name$ = "Oridecon";
-			.@base_fee = 20000;
-		}
-		else {
-			// Unknown weapon level - default to Oridecon
+		} else if (.@weapon_level == 3) {
 			.@material_id = 984;
 			.@material_name$ = "Oridecon";
 			.@base_fee = 5000;
+		} else {
+			.@material_id = 984;
+			.@material_name$ = "Oridecon";
+			.@base_fee = 20000;
 		}
-		
-		dispbottom "Detected: " + .@selected_name$ + " (Weapon Level " + .@weapon_level + ")";
-		dispbottom "Required: " + .@material_name$ + " + " + .@base_fee + " Zeny per attempt";
-	}
-	else if(.@item_type == IT_ARMOR) {
-		// All armor types and shields use Elunium
-		.@material_id = 985;           // Elunium
+	} else if (.@item_type == IT_ARMOR) {
+		.@material_id = 985;
 		.@material_name$ = "Elunium";
 		.@base_fee = 2000;
-		
-		dispbottom "Detected: " + .@selected_name$ + " (Armor/Shield)";
-		dispbottom "Required: " + .@material_name$ + " + " + .@base_fee + " Zeny per attempt";
-	}
-	
-	// Initialize arrays to store refine data
-	deletearray .@refine_counts[0], 11;  // Clear array (0 to 10 refine levels)
-	.@total_items = 0;
-	
-	// Count ALL refine levels of this item type
-	getinventorylist(); // Refresh inventory data
-	for(.@j = 0; .@j < @inventorylist_count; .@j++) {
-		// Check if this inventory slot has the same item ID (any refine level)
-		if(@inventorylist_id[.@j] == .@selected_item_id) {
-			.@current_refine = @inventorylist_refine[.@j];
-			.@current_amount = @inventorylist_amount[.@j];
-			
-			// Add to the count for this refine level
-			.@refine_counts[.@current_refine] += .@current_amount;
-			.@total_items += .@current_amount;
-		}
-	}
-	
-	// Show selected item summary
-	mes "[Bulk Refiner]";
-	mes "You selected: ^0000FF" + .@selected_name$ + "^000000";
-	mes "Total quantity: ^00FF00" + .@total_items + "^000000 items";
-	mes "Required material: ^FF6600" + .@material_name$ + "^000000";
-	next;
-	
-	// Display breakdown by refine level using dispbottom
-	dispbottom "=== " + .@selected_name$ + " Breakdown ===";
-	for(.@refine = 0; .@refine <= 10; .@refine++) {
-		if(.@refine_counts[.@refine] > 0) {
-			dispbottom "+" + .@refine + " refine: " + .@refine_counts[.@refine] + " items";
-		}
-	}
-	dispbottom "Total: " + .@total_items + " items ready for processing";
-	
-	mes "[Bulk Refiner]";
-	mes "Check the bottom of your screen for the detailed breakdown!";
-	next;
-	
-	// Ask for target refine level
-	mes "[Bulk Refiner]";
-	mes "What refine level do you want to reach?";
-	mes "^FF0000Warning: Items may break during refining!^000000";
-	input .@target_refine, 1, 10;
-	
-	if(.@target_refine < 1 || .@target_refine > 10) {
+	} else {
 		mes "[Bulk Refiner]";
-		mes "Invalid refine level! Must be between 1 and 10.";
+		mes "This item type is not supported.";
 		close;
 	}
-	
-	// === NEW: Calculate material and zeny costs ===
+
+	deletearray .@refine_counts[0], 11;
+	.@total_items = 0;
+
+	getinventorylist();
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		if (@inventorylist_id[.@i] != .@selected_item_id)
+			continue;
+		if (@inventorylist_equip[.@i])
+			continue;
+
+		.@current_refine = @inventorylist_refine[.@i];
+		if (.@current_refine > 10)
+			.@current_refine = 10;
+
+		.@refine_counts[.@current_refine] += @inventorylist_amount[.@i];
+		.@total_items += @inventorylist_amount[.@i];
+	}
+
+	mes "[Bulk Refiner]";
+	mes "Selected item: ^0000FF" + .@selected_name$ + "^000000";
+	mes "Eligible unequipped copies: ^00AA00" + .@total_items + "^000000";
+	mes "Material per attempt: ^FF6600" + .@material_name$ + "^000000";
+	mes "Zeny per attempt: ^FF6600" + .@base_fee + "^000000";
+	next;
+
+	dispbottom "=== " + .@selected_name$ + " Breakdown ===";
+	for (.@refine = 0; .@refine <= 10; .@refine++) {
+		if (.@refine_counts[.@refine] > 0)
+			dispbottom "+" + .@refine + ": " + .@refine_counts[.@refine] + " item(s)";
+	}
+
+	mes "[Bulk Refiner]";
+	mes "What target refine level do you want?";
+	mes "^FF0000Warning:^000000 failed attempts destroy the item.";
+	input .@target_refine, 1, 10;
+
+	if (.@target_refine < 1 || .@target_refine > 10) {
+		mes "[Bulk Refiner]";
+		mes "The target refine level must be between 1 and 10.";
+		close;
+	}
+
 	.@total_zeny_cost = 0;
 	.@total_material_cost = 0;
 	.@processable_items = 0;
-	
-	for(.@refine = 0; .@refine < .@target_refine; .@refine++) {
-		if(.@refine_counts[.@refine] > 0) {
-			.@items_at_level = .@refine_counts[.@refine];
-			.@processable_items += .@items_at_level;
-			
-			// Calculate cost per item from this level to target
-			for(.@level = .@refine; .@level < .@target_refine; .@level++) {
-				.@total_zeny_cost += (.@items_at_level * .@base_fee);
-				.@total_material_cost += .@items_at_level; // 1 material per attempt
-			}
+
+	for (.@refine = 0; .@refine < .@target_refine; .@refine++) {
+		if (!.@refine_counts[.@refine])
+			continue;
+
+		.@items_at_level = .@refine_counts[.@refine];
+		.@processable_items += .@items_at_level;
+
+		for (.@level = .@refine; .@level < .@target_refine; .@level++) {
+			.@total_zeny_cost += (.@items_at_level * .@base_fee);
+			.@total_material_cost += .@items_at_level;
 		}
 	}
-	
+
+	if (!.@processable_items) {
+		mes "[Bulk Refiner]";
+		mes "All eligible copies are already at or above your target.";
+		close;
+	}
+
 	mes "[Bulk Refiner]";
-	mes "Target refine level: ^00FF00+" + .@target_refine + "^000000";
-	mes "Items to process: ^00FF00" + .@processable_items + "^000000";
-	mes "Items already at target: ^808080" + (.@total_items - .@processable_items) + "^000000";
+	mes "Target refine: ^00AA00+" + .@target_refine + "^000000";
+	mes "Items to process: ^00AA00" + .@processable_items + "^000000";
+	mes "Untouched copies already at target or higher: ^808080" + (.@total_items - .@processable_items) + "^000000";
 	mes " ";
-	mes "^FF6600Required Materials:^000000";
-	mes "^FF6600" + .@total_material_cost + " " + .@material_name$ + "^000000";
-	mes "^FF0000" + .@total_zeny_cost + " Zeny^000000";
-	mes "^FF0000Items may break and be lost forever!^000000";
+	mes "^FF6600Worst-case cost:^000000";
+	mes .@total_material_cost + " " + .@material_name$;
+	mes .@total_zeny_cost + " Zeny";
 	next;
-	
-	// Check if player has enough materials and zeny
-	.@player_materials = countitem(.@material_id);
-	
-	if(.@player_materials < .@total_material_cost) {
+
+	if (countitem(.@material_id) < .@total_material_cost) {
 		mes "[Bulk Refiner]";
-		mes "^FF0000You don't have enough materials!^000000";
+		mes "You do not have enough materials.";
 		mes "Required: " + .@total_material_cost + " " + .@material_name$;
-		mes "You have: " + .@player_materials + " " + .@material_name$;
+		mes "You have: " + countitem(.@material_id) + " " + .@material_name$;
 		close;
 	}
-	
-	if(Zeny < .@total_zeny_cost) {
+
+	if (Zeny < .@total_zeny_cost) {
 		mes "[Bulk Refiner]";
-		mes "^FF0000You don't have enough Zeny!^000000";
-		mes "Required: " + .@total_zeny_cost + " Zeny";
-		mes "You have: " + Zeny + " Zeny";
+		mes "You do not have enough Zeny.";
+		mes "Required: " + .@total_zeny_cost;
+		mes "You have: " + Zeny;
 		close;
 	}
-	
+
 	mes "[Bulk Refiner]";
-	mes "Do you want to proceed with bulk refining?";
-	if(select("Yes, start refining:No, cancel") == 2) {
+	mes "Proceed with bulk refining?";
+	if (select("Yes, refine them:No, cancel") == 2) {
 		mes "[Bulk Refiner]";
-		mes "Refining cancelled.";
+		mes "Cancelled.";
 		close;
 	}
-	
-	// === BATCH PROCESSING PHASE ===
-	
-	// Step 1: Collect ALL items of the selected type
-	getinventorylist(); // Refresh inventory one more time
-	
-	// Check for inventory size limits to prevent server overload
-	if(@inventorylist_count > 100) {
-		mes "[Bulk Refiner]";
-		mes "^FF0000Warning: You have too many items in inventory!^000000";
-		mes "Please reduce your inventory to under 100 items.";
-		mes "This prevents server lag and infinite loops.";
-		close;
-	}
-	
-	// Arrays to store items for processing
-	deletearray .@process_items[0], 200;     // Item IDs
-	deletearray .@process_refines[0], 200;   // Current refine levels
-	deletearray .@process_identify[0], 200;  // Identify status
-	deletearray .@process_attribute[0], 200; // Attribute (broken status)
-	deletearray .@process_card0[0], 200;     // Card slots
-	deletearray .@process_card1[0], 200;
-	deletearray .@process_card2[0], 200;
-	deletearray .@process_card3[0], 200;
-	
+
+	deletearray .@process_idx[0], 100;
+	deletearray .@process_refine[0], 100;
+	deletearray .@process_identify[0], 100;
+	deletearray .@process_attribute[0], 100;
+	deletearray .@process_bound[0], 100;
+	deletearray .@process_card1[0], 100;
+	deletearray .@process_card2[0], 100;
+	deletearray .@process_card3[0], 100;
+	deletearray .@process_card4[0], 100;
+	deletearray .@process_opt_id1[0], 100;
+	deletearray .@process_opt_id2[0], 100;
+	deletearray .@process_opt_id3[0], 100;
+	deletearray .@process_opt_id4[0], 100;
+	deletearray .@process_opt_id5[0], 100;
+	deletearray .@process_opt_val1[0], 100;
+	deletearray .@process_opt_val2[0], 100;
+	deletearray .@process_opt_val3[0], 100;
+	deletearray .@process_opt_val4[0], 100;
+	deletearray .@process_opt_val5[0], 100;
+	deletearray .@process_opt_param1[0], 100;
+	deletearray .@process_opt_param2[0], 100;
+	deletearray .@process_opt_param3[0], 100;
+	deletearray .@process_opt_param4[0], 100;
+	deletearray .@process_opt_param5[0], 100;
 	.@process_count = 0;
-	
-	// Collect ALL items of the selected type (regardless of refine level)
-	for(.@i = 0; .@i < @inventorylist_count; .@i++) {
-		if(@inventorylist_id[.@i] == .@selected_item_id) {
-			.@current_refine = @inventorylist_refine[.@i];
-			.@current_amount = @inventorylist_amount[.@i];
-			
-			// Add each individual item to our processing arrays
-			for(.@k = 0; .@k < .@current_amount; .@k++) {
-				.@process_items[.@process_count] = @inventorylist_id[.@i];
-				.@process_refines[.@process_count] = @inventorylist_refine[.@i];
-				.@process_identify[.@process_count] = @inventorylist_identify[.@i];
-				.@process_attribute[.@process_count] = @inventorylist_attribute[.@i];
-				.@process_card0[.@process_count] = @inventorylist_card1[.@i];
-				.@process_card1[.@process_count] = @inventorylist_card2[.@i];
-				.@process_card2[.@process_count] = @inventorylist_card3[.@i];
-				.@process_card3[.@process_count] = @inventorylist_card4[.@i];
-				.@process_count++;
-				
-				// Safety check: Don't process too many items at once
-				if(.@process_count >= 100) {
-					mes "[Bulk Refiner]";
-					mes "^FF0000Safety limit reached!^000000";
-					mes "Maximum 100 items can be processed at once.";
-					close;
-				}
-			}
+
+	getinventorylist();
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		if (@inventorylist_id[.@i] != .@selected_item_id)
+			continue;
+		if (@inventorylist_equip[.@i])
+			continue;
+		if (@inventorylist_refine[.@i] >= .@target_refine)
+			continue;
+
+		if (.@process_count >= 100) {
+			mes "[Bulk Refiner]";
+			mes "Safety limit reached. I only process 100 items per batch.";
+			close;
 		}
+
+		.@process_idx[.@process_count] = @inventorylist_idx[.@i];
+		.@process_refine[.@process_count] = @inventorylist_refine[.@i];
+		.@process_identify[.@process_count] = @inventorylist_identify[.@i];
+		.@process_attribute[.@process_count] = @inventorylist_attribute[.@i];
+		.@process_bound[.@process_count] = @inventorylist_bound[.@i];
+		.@process_card1[.@process_count] = @inventorylist_card1[.@i];
+		.@process_card2[.@process_count] = @inventorylist_card2[.@i];
+		.@process_card3[.@process_count] = @inventorylist_card3[.@i];
+		.@process_card4[.@process_count] = @inventorylist_card4[.@i];
+		.@process_opt_id1[.@process_count] = @inventorylist_option_id1[.@i];
+		.@process_opt_id2[.@process_count] = @inventorylist_option_id2[.@i];
+		.@process_opt_id3[.@process_count] = @inventorylist_option_id3[.@i];
+		.@process_opt_id4[.@process_count] = @inventorylist_option_id4[.@i];
+		.@process_opt_id5[.@process_count] = @inventorylist_option_id5[.@i];
+		.@process_opt_val1[.@process_count] = @inventorylist_option_value1[.@i];
+		.@process_opt_val2[.@process_count] = @inventorylist_option_value2[.@i];
+		.@process_opt_val3[.@process_count] = @inventorylist_option_value3[.@i];
+		.@process_opt_val4[.@process_count] = @inventorylist_option_value4[.@i];
+		.@process_opt_val5[.@process_count] = @inventorylist_option_value5[.@i];
+		.@process_opt_param1[.@process_count] = @inventorylist_option_parameter1[.@i];
+		.@process_opt_param2[.@process_count] = @inventorylist_option_parameter2[.@i];
+		.@process_opt_param3[.@process_count] = @inventorylist_option_parameter3[.@i];
+		.@process_opt_param4[.@process_count] = @inventorylist_option_parameter4[.@i];
+		.@process_opt_param5[.@process_count] = @inventorylist_option_parameter5[.@i];
+		.@process_count++;
 	}
-	
-	dispbottom "=== Collected " + .@process_count + " items for processing ===";
-	
-	// Step 2: Delete ALL items that will be processed
-	// Delete all instances of the selected item (all refine levels)
-	.@deleted_count = countitem(.@selected_item_id);
-	if(.@deleted_count > 0) {
-		delitem .@selected_item_id, .@deleted_count;
-		dispbottom "Removed all " + .@selected_name$ + " from inventory (" + .@deleted_count + " items)";
+
+	if (!.@process_count) {
+		mes "[Bulk Refiner]";
+		mes "There is nothing left to process. Your inventory changed while the dialog was open.";
+		close;
 	}
-	
-	// Step 3: Process refining for each collected item with SAFETY LIMITS
+
+	.@processed_items = 0;
+	.@returned_items = 0;
+	.@broken_items = 0;
+	.@missing_items = 0;
+	.@stopped_items = 0;
 	.@successful_refines = 0;
 	.@failed_refines = 0;
-	.@broken_items = 0;
-	.@skipped_items = 0;
-	.@abandoned_items = 0;
 	.@total_zeny_spent = 0;
 	.@total_materials_used = 0;
-	
-	// Arrays to store results
-	deletearray .@result_items[0], 200;
-	deletearray .@result_refines[0], 200;
-	deletearray .@result_identify[0], 200;
-	deletearray .@result_attribute[0], 200;
-	deletearray .@result_card0[0], 200;
-	deletearray .@result_card1[0], 200;
-	deletearray .@result_card2[0], 200;
-	deletearray .@result_card3[0], 200;
-	.@result_count = 0;
-	
-	dispbottom "=== Starting Refining Process ===";
-	
-	// Process each item
-	for(.@i = 0; .@i < .@process_count; .@i++) {
-		.@item_id = .@process_items[.@i];
-		.@current_refine = .@process_refines[.@i];
-		.@item_identify = .@process_identify[.@i];
-		.@item_attribute = .@process_attribute[.@i];
-		.@item_card0 = .@process_card0[.@i];
-		.@item_card1 = .@process_card1[.@i];
-		.@item_card2 = .@process_card2[.@i];
-		.@item_card3 = .@process_card3[.@i];
-		
-		// Skip items already at or above target
-		if(.@current_refine >= .@target_refine) {
-			// Add to results as-is
-			.@result_items[.@result_count] = .@item_id;
-			.@result_refines[.@result_count] = .@current_refine;
-			.@result_identify[.@result_count] = .@item_identify;
-			.@result_attribute[.@result_count] = .@item_attribute;
-			.@result_card0[.@result_count] = .@item_card0;
-			.@result_card1[.@result_count] = .@item_card1;
-			.@result_card2[.@result_count] = .@item_card2;
-			.@result_card3[.@result_count] = .@item_card3;
-			.@result_count++;
-			.@skipped_items++;
+	.@resources_depleted = 0;
+	.@attempt_delay = 200;
+
+	dispbottom "=== Refiner Pro Max starting ===";
+
+	freeloop(1);
+	for (.@i = 0; .@i < .@process_count; .@i++) {
+		if (countitem(.@material_id) < 1 || Zeny < .@base_fee) {
+			.@stopped_items += (.@process_count - .@i);
+			break;
+		}
+
+		if (!delitemidx(.@process_idx[.@i], 1)) {
+			.@missing_items++;
 			continue;
 		}
-		
-		dispbottom "Processing item " + (.@i + 1) + "/" + .@process_count + ": " + getitemname(.@item_id) + " [+" + .@current_refine + "] -> [+" + .@target_refine + "]";
-		
-		// SAFETY LIMITS: Prevent infinite loops
+
+		.@processed_items++;
+		.@current_refine = .@process_refine[.@i];
 		.@item_broken = 0;
-		.@max_attempts = 100;  // Maximum refining attempts per item
-		.@attempts = 0;
-		
-		// Refine this item step by step to target level
-		freeloop(1);
-		while(.@current_refine < .@target_refine && .@item_broken == 0 && .@attempts < .@max_attempts) {
-			.@attempts++;
-			
-			// === NEW: Check and consume materials ===
-			if(countitem(.@material_id) < 1) {
-				dispbottom "  -> Not enough " + .@material_name$ + "! Stopping refinement.";
+		.@stopped_early = 0;
+
+		dispbottom "Processing " + (.@i + 1) + "/" + .@process_count + ": " + .@selected_name$ + " [+" + .@current_refine + "]";
+
+		while (.@current_refine < .@target_refine && !.@item_broken) {
+			if (countitem(.@material_id) < 1 || Zeny < .@base_fee) {
+				.@stopped_early = 1;
+				.@resources_depleted = 1;
 				break;
 			}
-			
-			if(Zeny < .@base_fee) {
-				dispbottom "  -> Not enough Zeny! Stopping refinement.";
-				break;
-			}
-			
-			// Consume materials and zeny
+
 			delitem .@material_id, 1;
 			Zeny -= .@base_fee;
 			.@total_materials_used++;
 			.@total_zeny_spent += .@base_fee;
-			
-			// Calculate success rate based on item type, weapon level, and current refine level
-			.@current_weapon_level = 0;
-			if(.@item_type == IT_WEAPON) {
-				.@current_weapon_level = getiteminfo(.@item_id, ITEMINFO_WEAPONLEVEL);
-				
-				if(.@current_weapon_level == 1) {
-					// Level 1 weapon: 100% up to +7, then 60%, 40%, 20%
-					if(.@current_refine <= 6) .@success_rate = 100;      // +0 to +7: 100%
-					else if(.@current_refine == 7) .@success_rate = 60;  // +7 to +8: 60%
-					else if(.@current_refine == 8) .@success_rate = 40;  // +8 to +9: 40%
-					else if(.@current_refine == 9) .@success_rate = 20;  // +9 to +10: 20%
-				}
-				else if(.@current_weapon_level == 2) {
-					// Level 2 weapon: 100% up to +6, then 60%, 40%, 20%, 20%
-					if(.@current_refine <= 5) .@success_rate = 100;      // +0 to +6: 100%
-					else if(.@current_refine == 6) .@success_rate = 60;  // +6 to +7: 60%
-					else if(.@current_refine == 7) .@success_rate = 40;  // +7 to +8: 40%
-					else if(.@current_refine == 8) .@success_rate = 20;  // +8 to +9: 20%
-					else if(.@current_refine == 9) .@success_rate = 20;  // +9 to +10: 20%
-				}
-				else if(.@current_weapon_level == 3) {
-					// Level 3 weapon: 100% up to +5, then 60%, 50%, 20%, 20%, 20%
-					if(.@current_refine <= 4) .@success_rate = 100;      // +0 to +5: 100%
-					else if(.@current_refine == 5) .@success_rate = 60;  // +5 to +6: 60%
-					else if(.@current_refine == 6) .@success_rate = 50;  // +6 to +7: 50%
-					else if(.@current_refine == 7) .@success_rate = 20;  // +7 to +8: 20%
-					else if(.@current_refine == 8) .@success_rate = 20;  // +8 to +9: 20%
-					else if(.@current_refine == 9) .@success_rate = 20;  // +9 to +10: 20%
-				}
-				else if(.@current_weapon_level == 4) {
-					// Level 4 weapon: 100% up to +4, then 60%, 40%, 40%, 20%, 20%, 10%
-					if(.@current_refine <= 3) .@success_rate = 100;      // +0 to +4: 100%
-					else if(.@current_refine == 4) .@success_rate = 60;  // +4 to +5: 60%
-					else if(.@current_refine == 5) .@success_rate = 40;  // +5 to +6: 40%
-					else if(.@current_refine == 6) .@success_rate = 40;  // +6 to +7: 40%
-					else if(.@current_refine == 7) .@success_rate = 20;  // +7 to +8: 20%
-					else if(.@current_refine == 8) .@success_rate = 20;  // +8 to +9: 20%
-					else if(.@current_refine == 9) .@success_rate = 10;  // +9 to +10: 10%
-				}
-				else {
-					// Unknown weapon level - default to Level 1 rates
-					if(.@current_refine <= 6) .@success_rate = 100;
-					else if(.@current_refine == 7) .@success_rate = 60;
-					else if(.@current_refine == 8) .@success_rate = 40;
-					else if(.@current_refine == 9) .@success_rate = 20;
-				}
-			}
-			else if(.@item_type == IT_ARMOR) {
-				// Armor (including shields): 100% up to +4, then 60%, 40%, 40%, 20%, 20%, 10%
-				if(.@current_refine <= 3) .@success_rate = 100;          // +0 to +4: 100%
-				else if(.@current_refine == 4) .@success_rate = 60;      // +4 to +5: 60%
-				else if(.@current_refine == 5) .@success_rate = 40;      // +5 to +6: 40%
-				else if(.@current_refine == 6) .@success_rate = 40;      // +6 to +7: 40%
-				else if(.@current_refine == 7) .@success_rate = 20;      // +7 to +8: 20%
-				else if(.@current_refine == 8) .@success_rate = 20;      // +8 to +9: 20%
-				else if(.@current_refine == 9) .@success_rate = 10;      // +9 to +10: 10%
-			}
 
-			// Roll for success
+			.@success_rate = callsub(L_GetSuccessRate, .@item_type, .@weapon_level, .@current_refine);
 			.@roll = rand(1, 100);
 
-			if(.@roll <= .@success_rate) {
-				// Success! Increase refine level
+			if (.@roll <= .@success_rate) {
+				.@previous_refine = .@current_refine;
 				.@current_refine++;
 				.@successful_refines++;
-				dispbottom "  -> Success! [+" + (.@current_refine-1) + "] -> [+" + .@current_refine + "] (Roll: " + .@roll + "/" + .@success_rate + "%, Attempt: " + .@attempts + ")";
+				dispbottom "  -> Success! [+" + .@previous_refine + "] -> [+" + .@current_refine + "] (Roll: " + .@roll + "/" + .@success_rate + "%)";
 			} else {
 				.@failed_refines++;
 				.@item_broken = 1;
 				.@broken_items++;
-				dispbottom "  -> BROKE! [+" + .@current_refine + "] destroyed! (Roll: " + .@roll + "/" + .@success_rate + "%, Attempt: " + .@attempts + ")";
-				specialeffect 155,AREA,"Refiner Pro Max";
+				dispbottom "  -> BROKE! [+" + .@current_refine + "] destroyed! (Roll: " + .@roll + "/" + .@success_rate + "%)";
 			}
-			sleep2 500;
+
+			sleep2 .@attempt_delay;
 		}
-		freeloop(0);
-		
-		// Check if we hit the attempt limit
-		if(.@attempts >= .@max_attempts && .@current_refine < .@target_refine && .@item_broken == 0) {
-			dispbottom "  -> Abandoned after " + .@max_attempts + " attempts (preventing infinite loop)";
-			.@abandoned_items++;
-		}
-		
-		// Add item to results (unless it broke)
-		if(.@item_broken == 0) {
-			.@result_items[.@result_count] = .@item_id;
-			.@result_refines[.@result_count] = .@current_refine;
-			.@result_identify[.@result_count] = .@item_identify;
-			.@result_attribute[.@result_count] = .@item_attribute;
-			.@result_card0[.@result_count] = .@item_card0;
-			.@result_card1[.@result_count] = .@item_card1;
-			.@result_card2[.@result_count] = .@item_card2;
-			.@result_card3[.@result_count] = .@item_card3;
-			.@result_count++;
-			dispbottom "  -> Final result: " + getitemname(.@item_id) + " [+" + .@current_refine + "] will be returned";
-			specialeffect 154,AREA,"Refiner Pro Max";
+
+		if (!.@item_broken) {
+			setarray .@opt_id[0],
+				.@process_opt_id1[.@i], .@process_opt_id2[.@i], .@process_opt_id3[.@i], .@process_opt_id4[.@i], .@process_opt_id5[.@i];
+			setarray .@opt_value[0],
+				.@process_opt_val1[.@i], .@process_opt_val2[.@i], .@process_opt_val3[.@i], .@process_opt_val4[.@i], .@process_opt_val5[.@i];
+			setarray .@opt_param[0],
+				.@process_opt_param1[.@i], .@process_opt_param2[.@i], .@process_opt_param3[.@i], .@process_opt_param4[.@i], .@process_opt_param5[.@i];
+
+			.@has_options = 0;
+			for (.@opt = 0; .@opt < 5; .@opt++) {
+				if (.@opt_id[.@opt]) {
+					.@has_options = 1;
+					break;
+				}
+			}
+
+			if (.@process_bound[.@i] > 0) {
+				if (.@has_options) {
+					getitembound3 .@selected_item_id, 1, .@process_identify[.@i], .@current_refine, .@process_attribute[.@i], .@process_card1[.@i], .@process_card2[.@i], .@process_card3[.@i], .@process_card4[.@i], .@process_bound[.@i], .@opt_id, .@opt_value, .@opt_param;
+				} else {
+					getitembound2 .@selected_item_id, 1, .@process_identify[.@i], .@current_refine, .@process_attribute[.@i], .@process_card1[.@i], .@process_card2[.@i], .@process_card3[.@i], .@process_card4[.@i], .@process_bound[.@i];
+				}
+			} else {
+				if (.@has_options) {
+					getitem3 .@selected_item_id, 1, .@process_identify[.@i], .@current_refine, .@process_attribute[.@i], .@process_card1[.@i], .@process_card2[.@i], .@process_card3[.@i], .@process_card4[.@i], .@opt_id, .@opt_value, .@opt_param;
+				} else {
+					getitem2 .@selected_item_id, 1, .@process_identify[.@i], .@current_refine, .@process_attribute[.@i], .@process_card1[.@i], .@process_card2[.@i], .@process_card3[.@i], .@process_card4[.@i];
+				}
+			}
+
+			.@returned_items++;
+			dispbottom "  -> Final result: " + .@selected_name$ + " [+" + .@current_refine + "] returned";
+			if (.@current_refine > .@process_refine[.@i])
+				specialeffect 154,AREA,strnpcinfo(0);
 		} else {
-			dispbottom "  -> Item destroyed - will not be returned";
+			dispbottom "  -> Item destroyed and not returned";
+			specialeffect 155,AREA,strnpcinfo(0);
+		}
+
+		if (.@stopped_early) {
+			.@stopped_items++;
+			.@stopped_items += (.@process_count - (.@i + 1));
+			break;
 		}
 	}
-	
-	// Step 4: Return all surviving items to inventory
-	dispbottom "=== Returning " + .@result_count + " items to inventory ===";
-	
-	for(.@i = 0; .@i < .@result_count; .@i++) {
-		getitem2 .@result_items[.@i], 1, .@result_identify[.@i], .@result_refines[.@i], .@result_attribute[.@i], .@result_card0[.@i], .@result_card1[.@i], .@result_card2[.@i], .@result_card3[.@i];
-		sleep2 1000;
-	}
-	
-	dispbottom "=== Refining Process Complete ===";
-	
-	// Show final results
+	freeloop(0);
+
+	dispbottom "=== Refiner Pro Max complete ===";
+
 	mes "[Bulk Refiner]";
-	mes "^00FF00Refining Complete!^000000";
-	mes " ";
-	mes "Results:";
-	mes "^00FF00Successful refines: " + .@successful_refines + "^000000";
-	mes "^FFFF00Failed attempts: " + .@failed_refines + "^000000";
-	mes "^FF0000Items broken: " + .@broken_items + "^000000";
-	mes "^808080Items skipped: " + .@skipped_items + "^000000";
-	if(.@abandoned_items > 0) {
-		mes "^FF8000Items abandoned: " + .@abandoned_items + "^000000";
-	}
-	mes " ";
-	mes "Items processed: ^00FF00" + .@process_count + "^000000";
-	mes "Items returned: ^00FF00" + .@result_count + "^000000";
-	mes "^FF6600" + .@material_name$ + " used: " + .@total_materials_used + "^000000";
-	mes "^FF0000Total Zeny spent: " + .@total_zeny_spent + "^000000";
-	
+	mes "^00AA00Refining complete.^000000";
+	mes "Items selected for processing: " + .@process_count;
+	mes "Items actually removed: " + .@processed_items;
+	mes "Items returned: " + .@returned_items;
+	mes "Items broken: ^FF0000" + .@broken_items + "^000000";
+	mes "Successful refine steps: ^00AA00" + .@successful_refines + "^000000";
+	mes "Failed refine steps: ^FFAA00" + .@failed_refines + "^000000";
+	if (.@missing_items > 0)
+		mes "Entries skipped because they changed: ^FF8800" + .@missing_items + "^000000";
+	if (.@stopped_items > 0)
+		mes "Items left untouched or stopped early: ^808080" + .@stopped_items + "^000000";
+	mes .@material_name$ + " used: ^FF6600" + .@total_materials_used + "^000000";
+	mes "Zeny spent: ^FF6600" + .@total_zeny_spent + "^000000";
 	close;
+
+L_GetSuccessRate:
+	.@item_type = getarg(0);
+	.@weapon_level = getarg(1);
+	.@current_refine = getarg(2);
+
+	if (.@item_type == IT_WEAPON) {
+		if (.@weapon_level == 1) {
+			if (.@current_refine <= 6) return 100;
+			if (.@current_refine == 7) return 60;
+			if (.@current_refine == 8) return 40;
+			if (.@current_refine == 9) return 20;
+		} else if (.@weapon_level == 2) {
+			if (.@current_refine <= 5) return 100;
+			if (.@current_refine == 6) return 60;
+			if (.@current_refine == 7) return 40;
+			if (.@current_refine == 8) return 20;
+			if (.@current_refine == 9) return 20;
+		} else if (.@weapon_level == 3) {
+			if (.@current_refine <= 4) return 100;
+			if (.@current_refine == 5) return 60;
+			if (.@current_refine == 6) return 50;
+			if (.@current_refine == 7) return 20;
+			if (.@current_refine == 8) return 20;
+			if (.@current_refine == 9) return 20;
+		} else {
+			if (.@current_refine <= 3) return 100;
+			if (.@current_refine == 4) return 60;
+			if (.@current_refine == 5) return 40;
+			if (.@current_refine == 6) return 40;
+			if (.@current_refine == 7) return 20;
+			if (.@current_refine == 8) return 20;
+			if (.@current_refine == 9) return 10;
+		}
+	} else if (.@item_type == IT_ARMOR) {
+		if (.@current_refine <= 3) return 100;
+		if (.@current_refine == 4) return 60;
+		if (.@current_refine == 5) return 40;
+		if (.@current_refine == 6) return 40;
+		if (.@current_refine == 7) return 20;
+		if (.@current_refine == 8) return 20;
+		if (.@current_refine == 9) return 10;
+	}
+
+	return 0;
 }

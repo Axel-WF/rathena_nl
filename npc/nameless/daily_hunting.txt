@@ -1,4 +1,4 @@
-prontera,155,181,4	script	Daily Hunter	634,{
+prontera,158,183,4	script	Daily Hunter	634,{
 	
 	// Check if player has an active daily quest
 	.@today = gettime(DT_YYYYMMDD);
@@ -25,8 +25,8 @@ prontera,155,181,4	script	Daily Hunter	634,{
 		
 		mes "Your current quest:";
 		mes "^0000FF" + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
-		mes "Progress: ^00FF00" + .@progress + "/" + .@required + "^000000";
-		mes "Quest changes remaining: ^FF00FF" + .@changes_left + "/5^000000";
+		mes "Progress: ^008800" + .@progress + "/" + .@required + "^000000";
+		mes "Quest changes remaining: ^003C88" + .@changes_left + "/5^000000";
 		next;
 		
 		if (.@progress >= .@required) {
@@ -75,7 +75,7 @@ prontera,155,181,4	script	Daily Hunter	634,{
 			
 			mes "Your quest for today:";
 			mes "^FF0000Hunt " + .@required + " " + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
-			mes "^00FF00You can change this quest up to 5 times if needed.^000000";
+			mes "^008800You can change this quest up to 5 times if needed.^000000";
 			mes "";
 			mes "Good luck, and happy hunting!";
 		} else {
@@ -88,37 +88,30 @@ prontera,155,181,4	script	Daily Hunter	634,{
 	mes "Something went wrong. Please contact an administrator.";
 	close;
 
-// Subroutine to generate a new quest
 S_GenerateQuest:
 	.@player_level = BaseLevel;
 	.@min_level = 1; // Minimum monster level
 	.@max_level = .@player_level + 20; // Maximum monster level
 	
 	// Manual blacklist of monster IDs to exclude from daily quests
-	// Add any problematic monster IDs here
 	setarray .@blacklisted_mobs[0],
 
 		2026; 
 	
-	// Debug: Show level range
-	// // dispbottom "DEBUG: Player Level: " + .@player_level + ", Range: " + .@min_level + "-" + .@max_level;
+	// dispbottom "DEBUG: Player Level: " + .@player_level + ", Range: " + .@min_level + "-" + .@max_level;
 	
-	// Clear the valid monsters array
 	deletearray .@valid_monsters[0], getarraysize(.@valid_monsters);
 	.@valid_count = 0;
 	.@checked_count = 0;
 	
 	// Loop through monster database to find valid monsters
-	// Note: This assumes monster IDs are sequential. Adjust range as needed.
 	freeloop(1);
 	for (.@mob_id = 1001; .@mob_id <= 2400; .@mob_id++) {
 		.@mob_level = getmonsterinfo(.@mob_id, MOB_LV);
 		.@checked_count++;
 		
-		// Check if monster exists and is within level range
 		if (.@mob_level > 0 && .@mob_level >= .@min_level && .@mob_level <= .@max_level) {
 			
-			// Manual blacklist check (if you added the blacklist)
 			.@is_blacklisted = 0;
 			for (.@i = 0; .@i < getarraysize(.@blacklisted_mobs); .@i++) {
 				if (.@blacklisted_mobs[.@i] == .@mob_id) {
@@ -131,7 +124,6 @@ S_GenerateQuest:
 				continue;
 			}
 			
-			// Get basic monster info
 			.@mob_name$ = getmonsterinfo(.@mob_id, MOB_NAME);
 			.@mob_base_exp = getmonsterinfo(.@mob_id, MOB_BASEEXP);
 			.@mob_job_exp = getmonsterinfo(.@mob_id, MOB_JOBEXP);
@@ -141,7 +133,6 @@ S_GenerateQuest:
 				// dispbottom "DEBUG: ID " + .@mob_id + " (" + .@mob_name$ + ") - Level: " + .@mob_level + ", BaseExp: " + .@mob_base_exp + ", JobExp: " + .@mob_job_exp;
 			}
 			
-			// Skip if monster name is empty or "null"
 			if (.@mob_name$ == "" || .@mob_name$ == "null") {
 				if (.@valid_count < 5) {
 					// dispbottom "DEBUG: Skipping ID " + .@mob_id + " - Empty/null name";
@@ -149,7 +140,6 @@ S_GenerateQuest:
 				continue;
 			}
 			
-			// Skip meta monsters (cannot spawn)
 			if (compare(.@mob_name$, "meta_")) {
 				if (.@valid_count < 5) {
 					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - Meta monster";
@@ -157,8 +147,7 @@ S_GenerateQuest:
 				continue;
 			}
 			
-			// IMPROVED EXPERIENCE FILTERING
-			// Option 1: Basic check - skip monsters with absolutely no experience
+			// Skip monsters with no experience
 			if (.@mob_base_exp <= 0 && .@mob_job_exp <= 0) {
 				if (.@valid_count < 5) {
 					// dispbottom "DEBUG: Skipping " + .@mob_name$ + " - No EXP at all";
@@ -194,7 +183,6 @@ S_GenerateQuest:
 				continue;
 			}
 			
-			// All filters passed, add to valid monsters
 			.@valid_monsters[.@valid_count] = .@mob_id;
 			.@valid_count++;
 			
@@ -209,17 +197,14 @@ S_GenerateQuest:
 	// Debug: Show final results
 	// // dispbottom "DEBUG: Checked " + .@checked_count + " monsters, found " + .@valid_count + " valid ones";
 	
-	// Check if we found any valid monsters
 	if (.@valid_count == 0) {
 		return 0; // No valid monsters found
 	}
 	
-	// Randomly select a monster from valid ones
 	.@selected_index = rand(.@valid_count);
 	.@selected_mob_id = .@valid_monsters[.@selected_index];
 	.@selected_mob_level = getmonsterinfo(.@selected_mob_id, MOB_LV);
 	
-	// Calculate required kills based on monster level vs player level
 	.@level_diff = .@player_level - .@selected_mob_level;
 	
 	// More kills for easier monsters, fewer for harder ones
@@ -233,16 +218,14 @@ S_GenerateQuest:
 		.@kill_count = rand(10, 20); // Harder monsters
 	}
 	
-	// Set quest variables
 	daily_hunt_mob_id = .@selected_mob_id;
 	daily_hunt_required = .@kill_count;
 	daily_hunt_current = 0;
 	daily_hunt_date = gettime(DT_YYYYMMDD);
 	daily_hunt_completed = 0;
 	
-	return 1; // Success
+	return 1; 
 
-// Subroutine to give rewards
 S_GiveReward:
 	.@mob_level = getmonsterinfo(daily_hunt_mob_id, MOB_LV);
 	.@required = daily_hunt_required;
@@ -259,20 +242,25 @@ S_GiveReward:
 		.@job_exp = .@job_exp * (2 + .@abs_diff / 5);
 	}
 	
-	// Give rewards
+	// Give Exp
 	getexp .@base_exp, .@job_exp;
 	
-	// Additional Zeny reward
+	// Give Zeny
 	.@zeny_reward = .@mob_level * .@required * 10;
 	Zeny += .@zeny_reward;
+
+	//Give Daily Hunting Coins
+	.@daily_coins_amount = 200;
+	getitem 35001, .@daily_coins_amount;
 	
 	// Mark as completed
 	daily_hunt_completed = 1;
 	
-	mes "^00FF00Rewards received:^000000";
+	mes "^008800Rewards received:^000000";
 	mes "Base EXP: ^0000FF" + .@base_exp + "^000000";
 	mes "Job EXP: ^0000FF" + .@job_exp + "^000000";
 	mes "Zeny: ^0000FF" + .@zeny_reward + "^000000";
+	mes "Daily Coins: ^0000FF" + .@daily_coins_amount + "^000000";
 	
 	return;
 
@@ -289,8 +277,8 @@ S_ChangeQuest:
 		
 		mes "Quest changed successfully!";
 		mes "New target: ^FF0000" + .@mob_name$ + " (" + daily_hunt_mob_id + ")^000000";
-		mes "Required kills: ^00FF00" + .@required + "^000000";
-		mes "Changes remaining: ^FF00FF" + (5 - daily_hunt_changes) + "/5^000000";
+		mes "Required kills: ^008800" + .@required + "^000000";
+		mes "Changes remaining: ^003C88" + (5 - daily_hunt_changes) + "/5^000000";
 	} else {
 		mes "Sorry, I couldn't find another suitable monster for your level.";
 		mes "Keeping your current quest.";

@@ -1,0 +1,28 @@
+# Mob Essence Drop Database
+# This file is a part of rAthena.
+#
+###########################################################################
+# Mob Essence Drop Settings
+###########################################################################
+#
+# Body:
+# - Id: 1
+#   Common:
+#     Item: Item ID injected into all non-MVP monsters.
+#     Rate: Drop rate in 1/10000 format.
+#     Blacklist: Optional list of mob IDs that should never drop the common essence.
+#   Mvp:
+#     Tier1/Tier2/Tier3:
+#       Item: Item ID injected for MVPs in that tier.
+#       Rate: Drop rate in 1/10000 format.
+#       MobIds: List of MVP mob IDs assigned to the tier.
+#
+###########################################################################
+
+Header:
+  Type: MOB_ESSENCE_DROP_DB
+  Version: 1
+
+Footer:
+  Imports:
+  - Path: db/import/mob_essence_drop.yml

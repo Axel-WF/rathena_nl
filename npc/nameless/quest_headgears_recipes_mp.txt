@@ -1,0 +1,94 @@
+-	script	HeadgearRecipeMP	-1,{
+OnInit:
+	freeloop(1);
+
+	// Magic Eyes [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5138,991,30,7263,20,7576,20,732,1,35600,1,35605,175;
+	// Magic Rabbit Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5503,914,50,7101,30,7751,30,995,1,35600,1,35605,175;
+	// Magnolia Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5365,712,30,6086,30,7293,20,1068,30,35605,90;
+	// Majestic Evil Horns [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5584,1038,60,923,10,1020,30,6089,20,35605,90;
+	// Mercury Riser [T2]
+	callfunc "F_RegisterHeadgearRecipe", 18597,998,80,999,50,969,10,991,20,35600,1,35605,175;
+	// Misstrance Crown [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5323,7754,30,7720,40,7576,20,7575,20,35605,90;
+	// Moon Rabbit Hat [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5457,7751,30,914,50,991,20,35602,1,35605,250;
+	// Muslim Hat M [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5354,1059,60,901,30,7751,20,7720,20,35605,90;
+	// Mystic Rose [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5117,712,30,6086,30,7293,20,7575,10,35605,90;
+	// Necktie [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5442,7205,60,7038,40,1094,20,969,10,35600,1,35605,175;
+	// Neko Mimi [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5099,1020,40,914,60,7263,20,7575,10,35600,1,35605,175;
+	// Neko Mimi Kafra [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5387,1034,40,1059,30,7263,20,969,10,35600,1,35605,175;
+	// Nice Hat Feather [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5686,949,60,916,50,7063,30,7115,20,35605,90;
+	// October Fest Cap [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5807,970,3,713,30,7182,30,7720,20,35605,90;
+	// Octopus Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5554,1024,30,935,40,965,30,7032,20,35605,90;
+	// Orange Ribbon [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5196,1070,40,1069,40,7182,30,1059,20,35600,1,35605,175;
+	// Orchid Hairband [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5370,712,30,6086,30,7293,20,901,20,35605,90;
+	// Ornate Crown [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5684,7754,40,7720,50,7576,20,7575,20,35605,90;
+	// Parade Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5225,1059,40,7038,30,7182,30,712,20,35605,90;
+	// Party Recruiter Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5337,1059,40,901,30,7720,20,1094,20,35605,90;
+	// Passion FB Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5856,990,30,994,10,1059,30,7575,20,35605,90;
+	// Peacock Feather [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5519,916,50,7101,30,7115,20,7576,20,35605,90;
+	// Pecopeco Hairband [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5286,7101,60,949,30,1034,20,1058,5,35600,1,35605,175;
+	// Persika [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5781,1070,40,1069,30,7182,30,7164,20,35605,90;
+	// Phrygian Cap [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5148,1059,40,901,20,990,20,7720,20,35605,90;
+	// Piece Of White Cloth [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5559,7751,60,1059,30,7038,30,991,20,35605,90;
+	// Pink Beanie [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5237,1059,50,914,50,7182,20,7720,10,35605,90;
+	// Pink Drooping Cat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5232,7206,20,914,60,7263,20,7293,10,35600,1,35605,175;
+	// Pink Night Cap [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5507,1059,40,914,30,7293,20,35602,1,35605,250;
+	// Pink Ribbon [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5194,901,30,7166,30,7293,20,991,20,35600,1,35605,175;
+	// Pinwheel Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5458,7064,50,992,30,1058,10,991,20,35600,1,35605,175;
+	// Pirate's Pride [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5501,935,40,965,30,1023,30,7720,20,35605,90;
+	// Pisces Crown [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5515,935,40,965,30,7576,20,35602,1,35605,250;
+	// Pisces Diadem [T3]
+	callfunc "F_RegisterHeadgearRecipe", 5514,1023,40,722,10,991,20,35602,1,35605,250;
+	// Pizza Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5499,7182,30,1070,30,1069,30,7720,10,35605,90;
+	// Poet Natalie's Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5806,7117,40,7099,30,7347,20,7511,10,35605,90;
+	// Pop Corn Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5413,7182,30,1062,30,921,20,7720,10,35605,90;
+	// Poporing Cap [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5352,993,3,7119,30,921,20,909,20,35605,90;
+	// Poring Cake Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5415,909,80,7182,30,990,20,722,5,35600,1,35605,175;
+	// Poring Party Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5318,909,80,7720,30,1013,20,914,20,35600,1,35605,175;
+	// Power Of Thor [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5495,992,30,991,30,999,30,996,1,35600,1,35605,175;
+	// Puppy Hat [T1]
+	callfunc "F_RegisterHeadgearRecipe", 5182,919,40,914,50,7101,20,7720,10,35605,90;
+	// Purple Cowboy Hat [T2]
+	callfunc "F_RegisterHeadgearRecipe", 5409,1028,60,919,40,7720,20,727,1,35600,1,35605,175;
+
+	freeloop(0);
+	end;
+}

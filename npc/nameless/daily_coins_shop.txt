@@ -1,0 +1,21 @@
+prontera,152,171,6	itemshop	Daily Coins Trader	612,35001,12208:300,14545:800,12210:600,12214:1000,12212:1,12259:50,12105:500,12071:30,12076:30,12081:30,12086:30,12091:30,12096:30,547:1,11502:1,522:2
+
+// 200 Daily Coins per character
+// Products:
+// ID		Name						Price
+// 12208	Battle Manual				300
+// 14545	Battle Manual x3			800
+// 12210	Bubble Gum					600
+// 12214	Convex Mirror				1000
+// 12212	Giant Fly Wing				1
+// 12259	Miracle Tonic				50
+// 12105	Pet Taming Gift Set			500
+// 12071	STR Dish 6					30
+// 12076	INT Dish 6					30
+// 12081	VIT Dish 6					30
+// 12086	AGI Dish 6					30
+// 12091	DEX Dish 6					30
+// 12096	LUK Dish 6					30
+// 547		Condensed White Potion		1
+// 11502	Light Blue Potion			1
+// 522		Mastela Fruit				2

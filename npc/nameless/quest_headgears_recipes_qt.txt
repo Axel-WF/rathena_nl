@@ -1,0 +1,124 @@
+-	script	HeadgearRecipeQT	-1,{
+OnInit:
+	freeloop(1);
+
+	// Radio Antenna [T2]
+callfunc "F_RegisterHeadgearRecipe", 5333,998,30,999,20,7093,20,756,5,35600,1,35605,175;
+	// Ramen Hat [T3]
+    callfunc "F_RegisterHeadgearRecipe", 5293,7182,30,712,20,7298,20,35602,1,35605,250;
+	// Raven Cap [T1]
+callfunc "F_RegisterHeadgearRecipe", 5530,949,30,916,20,7063,20,1021,10,35605,90;
+	// Red Deviruchi Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5227,949,30,916,20,7063,20,1021,10,35605,90;
+	// Red Mage Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5238,1045,20,7511,20,7347,20,724,5,35600,1,35605,175;
+	// Red Minstrel Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5435,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Red Ribbon [T2]
+callfunc "F_RegisterHeadgearRecipe", 5083,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Red Ribbon [T2]
+callfunc "F_RegisterHeadgearRecipe", 5195,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Red Tailed Ribbon [T3]
+  callfunc "F_RegisterHeadgearRecipe", 5801,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Red Wing Hat [T1]
+  callfunc "F_RegisterHeadgearRecipe", 5690,949,30,916,20,7063,20,991,20,35605,90;
+	// Rice Ball Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5575,7182,30,712,20,7298,20,6075,10,35605,90;
+	// Rideword Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5208,7112,30,7118,20,1097,20,7099,10,35605,90;
+	// RJC Katusa Flower [T1]
+callfunc "F_RegisterHeadgearRecipe", 5547,1026,30,1019,30,907,20,7298,20,35605,90;
+	// Rudolph Santa Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5742,7751,30,7038,20,991,20,712,10,35605,90;
+	// Sailor's Bandana [T1]
+callfunc "F_RegisterHeadgearRecipe", 5691,935,30,1013,20,722,10,7205,20,35605,90;
+	// Sakura Milk Tea Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5524,7182,30,712,20,7298,20,6075,10,35605,90;
+	// Sakura Mist Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5523,1026,30,1019,30,907,20,7298,20,35605,90;
+	// Sales Banner [T1]
+callfunc "F_RegisterHeadgearRecipe", 5100,7112,30,7118,20,1097,20,7099,10,35605,90;
+	// Satanic Helm [T2]
+callfunc "F_RegisterHeadgearRecipe", 5247,6089,30,7005,20,923,10,724,5,35600,1,35605,175;
+	// Satellite Hairband [T2]
+callfunc "F_RegisterHeadgearRecipe", 5212,998,30,999,20,7093,20,756,5,35600,1,35605,175;
+	// Savage Babe Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5572,949,30,916,20,7063,20,1021,10,35605,90;
+	// Sea Cat Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5692,935,30,1013,20,722,10,7205,20,35605,90;
+	// Selendang [T1]
+callfunc "F_RegisterHeadgearRecipe", 5355,1059,30,7038,20,901,20,7166,20,35605,90;
+	// Shaman's Hair Decoration [T2]
+callfunc "F_RegisterHeadgearRecipe", 5479,1045,20,7511,20,7347,20,724,5,35600,1,35605,175;
+	// Shark Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5508,935,30,1013,20,722,10,7205,20,35605,90;
+	// Sheep Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5133,949,30,916,20,7063,20,923,5,35600,1,35605,175;
+	// Sheila Hairnet [T2]
+callfunc "F_RegisterHeadgearRecipe", 5213,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Shining Electric Bulb Hairband [T1]
+callfunc "F_RegisterHeadgearRecipe", 5310,998,30,999,20,7093,20,7200,20,35605,90;
+	// Ship Captain Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5359,935,30,1013,20,720,3,7205,20,35600,1,35605,175;
+	// Shower Cap [T2]
+callfunc "F_RegisterHeadgearRecipe", 5510,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Side Cap [T3]
+  callfunc "F_RegisterHeadgearRecipe", 5535,998,30,999,20,7093,20,35602,1,35605,250;
+	// Silver Tiara [T3]
+callfunc "F_RegisterHeadgearRecipe", 5261,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Skull Cap [T3]
+callfunc "F_RegisterHeadgearRecipe", 18539,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Sleeper Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5659,7112,30,7118,20,1097,20,7099,10,35605,90;
+	// Snake Head Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5388,1021,30,1038,20,1036,20,720,3,35600,1,35605,175;
+	// Snowman Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5738,7751,30,7038,20,991,20,732,3,35600,1,35605,175;
+	// Solar Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5450,994,30,999,20,7182,20,907,10,35605,90;
+	// Sorin Doll Hat [T3]
+callfunc "F_RegisterHeadgearRecipe", 5342,740,30,7212,20,1059,30,35602,1,35605,250;
+	// Soul Ring [T1]
+callfunc "F_RegisterHeadgearRecipe", 5297,1045,20,7511,20,7347,20,991,10,35605,90;
+	// Splash Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 5770,935,30,1013,20,722,10,7205,20,35605,90;
+	// Sprout Hat [T1]
+callfunc "F_RegisterHeadgearRecipe", 18596,1026,30,1019,30,907,20,7298,20,35605,90;
+	// Statue Of Baby Angel [T1]
+callfunc "F_RegisterHeadgearRecipe", 5443,7063,30,7751,20,991,20,712,10,35605,90;
+	// Sting Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5509,949,30,916,20,7063,20,923,5,35600,1,35605,175;
+	// Striped Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5395,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Student Cap [T3]
+callfunc "F_RegisterHeadgearRecipe", 5492,7754,20,931,20,7347,20,35602,1,35605,250;
+	// Summer Hat [T3]
+    callfunc "F_RegisterHeadgearRecipe", 5456,7182,30,712,20,7298,20,35602,1,35605,250;
+	// Sunflower Hairpin [T2]
+callfunc "F_RegisterHeadgearRecipe", 5103,1026,30,1019,30,907,20,720,3,35600,1,35605,175;
+	// Tam [T3]
+callfunc "F_RegisterHeadgearRecipe", 5379,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Tanigumi Girl Doll [T2]
+callfunc "F_RegisterHeadgearRecipe", 5526,740,30,7212,20,1059,30,741,1,35600,1,35605,175;
+	// Taurus Crown [T3] 
+callfunc "F_RegisterHeadgearRecipe", 5550,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Taurus Diadem [T3]
+callfunc "F_RegisterHeadgearRecipe", 5549,1059,30,7038,20,901,20,35602,1,35605,250;
+	// Telling Doll Hat [T3]
+callfunc "F_RegisterHeadgearRecipe", 5343,740,30,7212,20,1059,30,35602,1,35605,250;
+	// Time Keeper Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5544,998,30,999,20,7093,20,756,5,35600,1,35605,175;
+	// Torch Cap [T1]
+callfunc "F_RegisterHeadgearRecipe", 5430,994,30,999,20,7182,20,907,10,35605,90;
+	// Triangle Rune Cap [T3]
+  callfunc "F_RegisterHeadgearRecipe", 5682,7511,20,1045,20,7347,20,35602,1,35605,250;
+	// Triple Poring Hat [T2]
+callfunc "F_RegisterHeadgearRecipe", 5255,740,30,7212,20,1059,30,741,1,35600,1,35605,175;
+	// Twin Pompom By JB [T2]
+callfunc "F_RegisterHeadgearRecipe", 5384,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+	// Twin Ribbon [T2]
+callfunc "F_RegisterHeadgearRecipe", 5187,1059,30,7038,20,901,20,730,10,35600,1,35605,175;
+
+	freeloop(0);
+	end;
+}

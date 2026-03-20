@@ -74,6 +74,7 @@ const t_tick MOB_MAX_DELAY = 24 * 3600 * 1000;
 std::unordered_map<uint16, std::vector<spawn_info>> mob_spawn_data;
 
 MobItemRatioDatabase mob_item_drop_ratio;
+MobEssenceDropDatabase mob_essence_drop_db;
 
 /// Mob skill struct for temporary storage
 struct s_mob_skill_db {
@@ -94,6 +95,8 @@ MobChatDatabase mob_chat_db;
  *------------------------------------------*/
 static TIMER_FUNC(mob_spawn_guardian_sub);
 int mob_skill_id2skill_idx(int mob_id,uint16 skill_id);
+static bool mob_essence_drop_blacklisted(const std::vector<uint32> &list, uint32 mob_id);
+static t_itemid mob_essence_drop_resolve_mvp(uint32 mob_id, uint32 *rate);
 
 /*========================================== [Playtester]
 * Removes all characters that spotted the monster but are no longer online
@@ -2872,6 +2875,16 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 			}
 		}
 
+		std::shared_ptr<s_mob_essence_drop> essence_config = mob_essence_drop_db.find(1);
+		if (essence_config != nullptr && essence_config->common_item_id > 0 && essence_config->common_rate > 0
+			&& md->db->get_bosstype() != BOSSTYPE_MVP
+			&& !mob_essence_drop_blacklisted(essence_config->common_blacklist, md->mob_id)
+			&& rnd() % 10000 < essence_config->common_rate) {
+			struct s_mob_drop mobdrop = {};
+			mobdrop.nameid = essence_config->common_item_id;
+			mob_item_drop(md, dlist, mob_setdropitem(&mobdrop, 1, md->mob_id), 0, essence_config->common_rate, homkillonly || merckillonly);
+		}
+
 		// process items looted by the mob
 		if (md->lootitems) {
 			for (i = 0; i < md->lootitem_count; i++)
@@ -3003,6 +3016,38 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				//If item_drop_mvp_mode is not 2, then only one item should be granted
 				if(battle_config.item_drop_mvp_mode != 2) {
 					break;
+				}
+			}
+
+			uint32 essence_rate = 0;
+			t_itemid essence_item_id = mob_essence_drop_resolve_mvp(md->mob_id, &essence_rate);
+			if (essence_item_id > 0 && essence_rate > 0) {
+				int temp_rate = essence_rate;
+
+#if defined(RENEWAL_DROP)
+				temp_rate = cap_value(apply_rate(temp_rate, penalty), 0, 10000);
+#endif
+
+				if ((temp_rate > 0 || battle_config.drop_rate0item) && (temp_rate == 10000 || rnd()%10000 < temp_rate)) {
+					struct item item = {};
+					struct item_data *i_data = itemdb_exists(essence_item_id);
+
+					if (i_data != nullptr) {
+						item.nameid = essence_item_id;
+						item.identify = itemdb_isidentified(item.nameid);
+						clif_mvp_item(mvp_sd, item.nameid);
+
+						if ((temp = pc_additem(mvp_sd, &item, 1, LOG_TYPE_PICKDROP_PLAYER)) != 0) {
+							clif_additem(mvp_sd, 0, 0, temp);
+							map_addflooritem(&item, 1, mvp_sd->bl.m, mvp_sd->bl.x, mvp_sd->bl.y, mvp_sd->status.char_id,
+								(second_sd ? second_sd->status.char_id : 0), (third_sd ? third_sd->status.char_id : 0), 1, 0, true);
+						}
+
+						if (i_data->flag.broadcast)
+							intif_broadcast_obtain_special_item(mvp_sd, item.nameid, md->mob_id, ITEMOBTAIN_TYPE_MONSTER_ITEM);
+
+						log_pick_mob(md, LOG_TYPE_MVP, -1, &item);
+					}
 				}
 			}
 		}
@@ -4177,6 +4222,38 @@ static void item_dropratio_adjust(t_itemid nameid, int mob_id, int *rate_adjust)
 		if( item_ratio->mob_ids.empty() || util::vector_exists( item_ratio->mob_ids, static_cast<uint16>( mob_id ) ) )
 			*rate_adjust = item_ratio->drop_ratio;
 	}
+}
+
+static bool mob_essence_drop_blacklisted(const std::vector<uint32> &list, uint32 mob_id) {
+	return util::vector_exists(list, mob_id);
+}
+
+static t_itemid mob_essence_drop_resolve_mvp(uint32 mob_id, uint32 *rate) {
+	std::shared_ptr<s_mob_essence_drop> config = mob_essence_drop_db.find(1);
+
+	if (config == nullptr) {
+		return 0;
+	}
+
+	for (uint8 i = 0; i < ARRAYLENGTH(config->mvp_tier); i++) {
+		const s_mob_essence_drop_tier &tier = config->mvp_tier[i];
+
+		if (tier.item_id == 0 || tier.rate == 0) {
+			continue;
+		}
+
+		if (!util::vector_exists(tier.mob_ids, mob_id)) {
+			continue;
+		}
+
+		if (rate != nullptr) {
+			*rate = tier.rate;
+		}
+
+		return tier.item_id;
+	}
+
+	return 0;
 }
 
 const std::string MobDatabase::getDefaultLocation() {
@@ -6016,6 +6093,10 @@ const std::string MobItemRatioDatabase::getDefaultLocation() {
 	return std::string(db_path) + "/mob_item_ratio.yml";
 }
 
+const std::string MobEssenceDropDatabase::getDefaultLocation() {
+	return std::string(db_path) + "/mob_essence_drop.yml";
+}
+
 /**
  * Reads and parses an entry from the mob_item_ratio.
  * @param node: YAML node containing the entry.
@@ -6088,6 +6169,125 @@ uint64 MobItemRatioDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 	if (!exists)
 		this->put(nameid, data);
+
+	return 1;
+}
+
+uint64 MobEssenceDropDatabase::parseBodyNode(const ryml::NodeRef& node) {
+	uint16 id;
+
+	if (!this->asUInt16(node, "Id", id))
+		return 0;
+
+	std::shared_ptr<s_mob_essence_drop> data = this->find(id);
+
+	if (data == nullptr) {
+		data = std::make_shared<s_mob_essence_drop>();
+		data->id = id;
+	}
+
+	auto parse_item_id = [&](const ryml::NodeRef& parent, const std::string &name, t_itemid &out) -> bool {
+		uint32 item_id;
+
+		if (!this->asUInt32(parent, name, item_id))
+			return false;
+
+		if (itemdb_exists(item_id) == nullptr) {
+			this->invalidWarning(parent[c4::to_csubstr(name)], "Unknown item id %u.\n", item_id);
+			return false;
+		}
+
+		out = item_id;
+		return true;
+	};
+
+	auto parse_id_list = [&](const ryml::NodeRef& parent, const std::string &name, std::vector<uint32> &out) -> bool {
+		if (!this->nodeExists(parent, name)) {
+			return true;
+		}
+
+		const auto &listNode = parent[c4::to_csubstr(name)];
+		std::vector<uint32> parsed;
+
+		for (const auto &it : listNode) {
+			uint32 mob_id;
+
+			try {
+				it >> mob_id;
+			} catch (std::runtime_error const&) {
+				this->invalidWarning(it, "Mob id could not be parsed as uint32.\n");
+				return false;
+			}
+
+			if (!mob_db.exists(mob_id)) {
+				this->invalidWarning(it, "Unknown mob id %u.\n", mob_id);
+				continue;
+			}
+
+			if (!util::vector_exists(parsed, mob_id)) {
+				parsed.push_back(mob_id);
+			}
+		}
+
+		out = parsed;
+		return true;
+	};
+
+	if (this->nodeExists(node, "Common")) {
+		const auto &commonNode = node["Common"];
+
+		if (this->nodeExists(commonNode, "Item")) {
+			if (!parse_item_id(commonNode, "Item", data->common_item_id))
+				return 0;
+		}
+
+		if (this->nodeExists(commonNode, "Rate")) {
+			if (!this->asUInt32Rate(commonNode, "Rate", data->common_rate))
+				return 0;
+		}
+
+		if (!parse_id_list(commonNode, "Blacklist", data->common_blacklist))
+			return 0;
+	}
+
+	if (this->nodeExists(node, "Mvp")) {
+		const auto &mvpNode = node["Mvp"];
+		const char *tier_names[3] = { "Tier1", "Tier2", "Tier3" };
+		std::vector<uint32> assigned_mobs;
+
+		for (uint8 i = 0; i < ARRAYLENGTH(tier_names); i++) {
+			if (!this->nodeExists(mvpNode, tier_names[i])) {
+				continue;
+			}
+
+			const auto &tierNode = mvpNode[c4::to_csubstr(tier_names[i])];
+			s_mob_essence_drop_tier &tier = data->mvp_tier[i];
+
+			if (this->nodeExists(tierNode, "Item")) {
+				if (!parse_item_id(tierNode, "Item", tier.item_id))
+					return 0;
+			}
+
+			if (this->nodeExists(tierNode, "Rate")) {
+				if (!this->asUInt32Rate(tierNode, "Rate", tier.rate))
+					return 0;
+			}
+
+			if (!parse_id_list(tierNode, "MobIds", tier.mob_ids))
+				return 0;
+
+			for (uint32 mob_id : tier.mob_ids) {
+				if (util::vector_exists(assigned_mobs, mob_id)) {
+					this->invalidWarning(tierNode["MobIds"], "Mob id %u is assigned to multiple MVP tiers.\n", mob_id);
+					return 0;
+				}
+
+				assigned_mobs.push_back(mob_id);
+			}
+		}
+	}
+
+	this->put(id, data);
 
 	return 1;
 }
@@ -6374,6 +6574,7 @@ static void mob_load(void)
 	}
 
 	mob_item_drop_ratio.load();
+	mob_essence_drop_db.load();
 	mob_avail_db.load();
 	mob_summon_db.load();
 
@@ -6540,6 +6741,7 @@ void do_final_mob(bool is_reload){
 	mob_skill_db.clear();
 
 	mob_item_drop_ratio.clear();
+	mob_essence_drop_db.clear();
 	mob_summon_db.clear();
 	if( !is_reload ) {
 		ers_destroy(item_drop_ers);

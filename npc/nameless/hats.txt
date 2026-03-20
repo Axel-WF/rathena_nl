@@ -1,0 +1,286 @@
+// Current craftable headgears in the custom Headgear Quests NPC.
+// Source of truth: npc/nameless/quest_headgears.txt shop lists
+// and npc/nameless/quest_headgears_recipes_*.txt recipe registrations.
+
+// AD
+// Alice Doll                      5137
+// Angelic Helm                    5246
+// Angel's Kiss                    5125
+// Angeling Hairpin                5153
+// Angeling Hat                    5132
+// Anubis Helm                     5490
+// Aquarius Crown                  5513
+// Aquarius Diadem                 5512
+// Aries Crown                     5546
+// Aries Diadem                    5545
+// Autumn Leaves                   5270
+// Ayothaya King's Hat             5312
+// Banana Hat                      5116
+// Bandit's Hat                    5491
+// Beer Hat                        5416
+// Bell Ribbon                     5382
+// Bennit Doll Hat                 5344
+// BF Recruiter Hat                5338
+// Bijofnil Wings                  5480
+// Bird's Nest                     5129
+// Bird Nest Hat                   5183
+// Black Musang Hat                18613
+// Black Ribbon                    5191
+// Black Tea Kochakaden            5427
+// Blue Beanie                     5236
+// Blue Drooping Cat               5233
+// Blue Mage Hat                   5241
+// Blue Night Cap                  5506
+// Blue Ribbon                     5404
+// Bogy Cap                        5429
+// Brazil National Flag Hat        5308
+// Brazil Twin Ribbon              5600
+// Bride Corolla                   5436
+// Bright Fury                     5567
+// Brown Beanie                    5235
+// Brown Deviruchi Hat             5229
+// Brown Drooping Cat              5231
+// Brown Mage Hat                  5240
+// Bullock Helm                    5300
+// Bunny Top Hat                   5378
+// Camp Fire Hat                   5414
+// Cancer Crown                    5582
+// Cancer Diadem                   5581
+// Captain's Hat                   5184
+// Carmen Miranda's Hat            5307
+// Carnival Circlet                5819
+// Carnival Hat                    5818
+// Cat Ear Beret                   18600
+// Catfoot Hairpin                 5446
+// Champion Wreath                 5320
+// Charming Ribbon                 5140
+// Chick Hat                       5283
+// Chicken Hat                     5431
+// Classic Hat                     5478
+// Cool FB Hat                     5857
+// Coppola                         5200
+// Crown Parrots                   5417
+// Cute Blue Ribbon                5440
+// Cute Green Ribbon               5438
+// Cute Red Ribbon                 5439
+// Cute White Ribbon               5441
+// Dark Wing                       5369
+// Darkness Helm                   5653
+// Decorative Geographer           5455
+// Defolty Doll Hat                5340
+// Deviling Hat                    5254
+// Dice Hat                        5496
+// Dokebi Horn                     5573
+// Dragon Skull                    5292
+// Dress Hat                       5211
+// Drooping Bunny                  5198
+// Drooping Morocc Minion          5671
+// Drooping Nine Tail              5296
+
+// EH
+// Eden Team Hat                   5583
+// Elephant Hat                    5259
+// Emperor Wreath                  5533
+// European Baseball Cap           5282
+// Fairy Flower                    5437
+// Family Hat                      5771
+// Filir Hat                       5405
+// Fish Head Hat                   5380
+// Fish Pin                        5792
+// Fisherman's Hat                 5317
+// Flapping Angel Wing             5210
+// Flapping Angeling               5334
+// Flower Crown                    5303
+// Flower Lily                     5302
+// Flying Evil Wings               5376
+// Friend Recruiter Hat            5339
+// Frog Hat                        5447
+// Frog King Hat                   5528
+// Frozen Twin Pompom              5390
+// Fruit of Love                   5056
+// Gambler Hat                     5144
+// Gemini Crown                    5570
+// Gemini Diadem                   5569
+// GF Recruiter Hat                5346
+// Glaris Doll Hat                 5341
+// Gold Tulip Hairpin              5821
+// Golden Crown                    5666
+// Golden Laurel                   5433
+// Golden Tiara                    5262
+// Gray Deviruchi Hat              5228
+// Gray Drooping Cat               5230
+// Gray Mage Hat                   5239
+// Green Ribbon                    5681
+// Gryphon Hat                     5660
+// Guildsman Recruiter Hat         5336
+// Hair Brush                      5444
+// Hello Mother Hat                5319
+// Helm Of Abyss                   5363
+// Hermode Cap                     5481
+// Hibiscus                        5139
+// Holy Marching Hat               5654
+// Horn of Ancient                 18595
+// Hunter's Cap                    5383
+// Hyuke's Black Cat Ears          5360
+
+// IL
+// I Love China                    5423
+// Icecream Hat                    5500
+// Imp Hat                         5658
+// Indian Headband                 5071
+// Jasper Crest                    5396
+// Joker Jester                    5150
+// Jumping Poring                  5335
+// Kafra Band                      5020
+// Karada Meguricha Hat            5426
+// Kerchief                        5322
+// Kettle Hat                      5291
+// King Tiger Doll Hat             5497
+// Koneko Hat                      5372
+// Kwati Hat                       5537
+// Large Hisbiscus                 5311
+// Laurel Wreath                   5185
+// Lazy Smokie                     5084
+// Leaf Cat Hat                    5555
+// Legionnaire Hat                 5418
+// Lif Doll Hat                    5253
+// Linguistic Book Hat             5422
+// Little Angel Doll               5324
+// Love Chick Hat                  5822
+// Love Dad Cap                    5209
+// Love Daddy Hat                  5489
+// Love Flower Hat                 5803
+// Love Valentine's Hat            5393
+// Lunatic Hat                     5527
+// Luoyang NewYear Hat             5392
+// Luxury Hat                      5558
+
+// MP
+// Magic Eyes                      5138
+// Magic Rabbit Hat                5503
+// Magnolia Hat                    5365
+// Majestic Evil Horns             5584
+// Mercury Riser                   18597
+// Misstrance Crown                5323
+// Moon Rabbit Hat                 5457
+// Muslim Hat M                    5354
+// Mystic Rose                     5117
+// Necktie                         5442
+// Neko Mimi                       5099
+// Neko Mimi Kafra                 5387
+// Nice Hat Feather                5686
+// October Fest Cap                5807
+// Octopus Hat                     5554
+// Orange Ribbon                   5196
+// Orchid Hairband                 5370
+// Ornate Crown                    5684
+// Parade Hat                      5225
+// Party Recruiter Hat             5337
+// Passion FB Hat                  5856
+// Peacock Feather                 5519
+// Pecopeco Hairband               5286
+// Persika                         5781
+// Phrygian Cap                    5148
+// Piece Of White Cloth            5559
+// Pink Beanie                     5237
+// Pink Drooping Cat               5232
+// Pink Night Cap                  5507
+// Pink Ribbon                     5194
+// Pinwheel Hat                    5458
+// Pirate's Pride                  5501
+// Pisces Crown                    5515
+// Pisces Diadem                   5514
+// Pizza Hat                       5499
+// Poet Natalie's Hat              5806
+// Pop Corn Hat                    5413
+// Poporing Cap                    5352
+// Poring Cake Hat                 5415
+// Poring Party Hat                5318
+// Power Of Thor                   5495
+// Puppy Hat                       5182
+// Purple Cowboy Hat               5409
+
+// QT
+// Radio Antenna                   5333
+// Ramen Hat                       5293
+// Raven Cap                       5530
+// Red Deviruchi Hat               5227
+// Red Mage Hat                    5238
+// Red Minstrel Hat                5435
+// Red Ribbon                      5083
+// Red Ribbon                      5195
+// Red Tailed Ribbon               5801
+// Red Wing Hat                    5690
+// Rice Ball Hat                   5575
+// Rideword Hat                    5208
+// RJC Katusa Flower               5547
+// Rudolph Santa Hat               5742
+// Sailor's Bandana                5691
+// Sakura Milk Tea Hat             5524
+// Sakura Mist Hat                 5523
+// Sales Banner                    5100
+// Satanic Helm                    5247
+// Satellite Hairband              5212
+// Savage Babe Hat                 5572
+// Sea Cat Hat                     5692
+// Selendang                       5355
+// Shaman's Hair Decoration        5479
+// Shark Hat                       5508
+// Sheep Hat                       5133
+// Sheila Hairnet                  5213
+// Shining Electric Bulb Hairband  5310
+// Ship Captain Hat                5359
+// Shower Cap                      5510
+// Side Cap                        5535
+// Silver Tiara                    5261
+// Skull Cap                       18539
+// Sleeper Hat                     5659
+// Snake Head Hat                  5388
+// Snowman Hat                     5738
+// Solar Hat                       5450
+// Sorin Doll Hat                  5342
+// Soul Ring                       5297
+// Splash Hat                      5770
+// Sprout Hat                      18596
+// Statue Of Baby Angel            5443
+// Sting Hat                       5509
+// Striped Hat                     5395
+// Student Cap                     5492
+// Summer Hat                      5456
+// Sunflower Hairpin               5103
+// Tam                             5379
+// Tanigumi Girl Doll              5526
+// Taurus Crown                    5550
+// Taurus Diadem                   5549
+// Telling Doll Hat                5343
+// Time Keeper Hat                 5544
+// Torch Cap                       5430
+// Triangle Rune Cap               5682
+// Triple Poring Hat               5255
+// Twin Pompom By JB               5384
+// Twin Ribbon                     5187
+
+// UZ
+// Umbrella Hat                    5316
+// Valkyrie Feather Band           5256
+// Valkyrie Helmet                 5826
+// Vane Hairpin                    5285
+// Vanilmirth Hat                  5289
+// Victorious Coronet              5805
+// Victory FB Hat                  5858
+// Voyage_Hat                      5578
+// W Doll Hat                      5345
+// Wandering Minstrel Hat          5188
+// Water Lily Crown                5284
+// White Musang Hat                18612
+// White Ribbon                    5197
+// White Snake Hat                 5411
+// Wild Rose Hat                   5557
+// Witch's Pumpkin Hat             18656
+// Yellow Bandana                  5277
+// Yellow Drooping Cat             5234
+// Yellow Mage Hat                 5242
+// Yellow Ribbon                   5278
+// Yellow Ribbon                   5192
+// Yoyo Hat                        5385
+// Zaha Doll Hat                   5464

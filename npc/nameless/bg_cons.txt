@@ -1,4 +1,4 @@
-prontera,158,176,4	script	BG Consumables Shop	641,{
+prontera,159,176,4	script	BG Consumables Shop	641,{
 
 	mes "[Consumables Shop]";
 	mes "Welcome! I sell items for different purposes.";

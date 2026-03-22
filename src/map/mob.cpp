@@ -4,6 +4,7 @@
 #include "mob.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <map>
 #include <math.h>
 #include <stdlib.h>
@@ -97,6 +98,9 @@ static TIMER_FUNC(mob_spawn_guardian_sub);
 int mob_skill_id2skill_idx(int mob_id,uint16 skill_id);
 static bool mob_essence_drop_blacklisted(const std::vector<uint32> &list, uint32 mob_id);
 static t_itemid mob_essence_drop_resolve_mvp(uint32 mob_id, uint32 *rate);
+static bool mob_essence_drop_matches_pool(const s_mob_essence_drop_pool &pool, const mob_data *md);
+static void mob_essence_drop_apply_normal_pools(const mob_data *md, item_drop_list *dlist, bool homkillonly, bool merckillonly);
+static void mob_essence_drop_apply_mvp_pools(const mob_data *md, map_session_data *mvp_sd, map_session_data *second_sd, map_session_data *third_sd, int penalty, int &temp);
 
 /*========================================== [Playtester]
 * Removes all characters that spotted the monster but are no longer online
@@ -2885,6 +2889,10 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 			mob_item_drop(md, dlist, mob_setdropitem(&mobdrop, 1, md->mob_id), 0, essence_config->common_rate, homkillonly || merckillonly);
 		}
 
+		if (md->db->get_bosstype() != BOSSTYPE_MVP) {
+			mob_essence_drop_apply_normal_pools(md, dlist, homkillonly, merckillonly);
+		}
+
 		// process items looted by the mob
 		if (md->lootitems) {
 			for (i = 0; i < md->lootitem_count; i++)
@@ -2964,8 +2972,9 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				}
 			}
 
+			int penalty = 100;
 #if defined(RENEWAL_DROP)
-			int penalty = pc_level_penalty_mod( mvp_sd, PENALTY_MVP_DROP, nullptr, md );
+			penalty = pc_level_penalty_mod( mvp_sd, PENALTY_MVP_DROP, nullptr, md );
 #endif
 
 			for(i = 0; i < MAX_MVP_DROP_TOTAL; i++) {
@@ -3050,6 +3059,8 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 					}
 				}
 			}
+
+			mob_essence_drop_apply_mvp_pools(md, mvp_sd, second_sd, third_sd, penalty, temp);
 		}
 
 		log_mvpdrop(mvp_sd, md->mob_id, log_mvp_nameid, log_mvp_exp);
@@ -4254,6 +4265,117 @@ static t_itemid mob_essence_drop_resolve_mvp(uint32 mob_id, uint32 *rate) {
 	}
 
 	return 0;
+}
+
+static bool mob_essence_drop_matches_pool(const s_mob_essence_drop_pool &pool, const mob_data *md) {
+	if (!pool.filters.elements.empty() && !util::vector_exists(pool.filters.elements, md->db->status.def_ele)) {
+		return false;
+	}
+
+	if (pool.filters.min_level > 0 && md->level < pool.filters.min_level) {
+		return false;
+	}
+
+	if (pool.filters.max_level > 0 && md->level > pool.filters.max_level) {
+		return false;
+	}
+
+	return true;
+}
+
+static void mob_essence_drop_apply_normal_pools(const mob_data *md, item_drop_list *dlist, bool homkillonly, bool merckillonly) {
+	std::shared_ptr<s_mob_essence_drop> config = mob_essence_drop_db.find(1);
+
+	if (config == nullptr) {
+		return;
+	}
+
+	for (const s_mob_essence_drop_pool &pool : config->pools) {
+		if (pool.apply_to == MOB_ESSENCE_APPLY_MVPONLY) {
+			continue;
+		}
+
+		if (!mob_essence_drop_matches_pool(pool, md)) {
+			continue;
+		}
+
+		for (const s_mob_essence_drop_entry &entry : pool.drops) {
+			if (entry.item_id == 0 || entry.rate == 0) {
+				continue;
+			}
+
+			if (rnd() % 10000 >= entry.rate) {
+				continue;
+			}
+
+			struct s_mob_drop mobdrop = {};
+			mobdrop.nameid = entry.item_id;
+			mob_item_drop(const_cast<mob_data *>(md), dlist, mob_setdropitem(&mobdrop, 1, md->mob_id), 0, entry.rate, homkillonly || merckillonly);
+		}
+	}
+}
+
+static void mob_essence_drop_apply_mvp_pools(const mob_data *md, map_session_data *mvp_sd, map_session_data *second_sd, map_session_data *third_sd, int penalty, int &temp) {
+	std::shared_ptr<s_mob_essence_drop> config = mob_essence_drop_db.find(1);
+
+	if (config == nullptr) {
+		return;
+	}
+
+	for (const s_mob_essence_drop_pool &pool : config->pools) {
+		if (pool.apply_to == MOB_ESSENCE_APPLY_NONMVP) {
+			continue;
+		}
+
+		if (!mob_essence_drop_matches_pool(pool, md)) {
+			continue;
+		}
+
+		for (const s_mob_essence_drop_entry &entry : pool.drops) {
+			int temp_rate;
+			struct item item = {};
+			struct item_data *i_data;
+
+			if (entry.item_id == 0 || entry.rate == 0) {
+				continue;
+			}
+
+			temp_rate = entry.rate;
+
+#if defined(RENEWAL_DROP)
+			temp_rate = cap_value(apply_rate(temp_rate, penalty), 0, 10000);
+#endif
+
+			if (!(temp_rate > 0 || battle_config.drop_rate0item)) {
+				continue;
+			}
+
+			if (temp_rate != 10000 && rnd() % 10000 >= temp_rate) {
+				continue;
+			}
+
+			i_data = itemdb_exists(entry.item_id);
+			if (i_data == nullptr) {
+				continue;
+			}
+
+			item.nameid = entry.item_id;
+			item.identify = itemdb_isidentified(item.nameid);
+			clif_mvp_item(mvp_sd, item.nameid);
+
+			if ((temp = pc_additem(mvp_sd, &item, 1, LOG_TYPE_PICKDROP_PLAYER)) != 0) {
+				clif_additem(mvp_sd, 0, 0, temp);
+				map_addflooritem(&item, 1, mvp_sd->bl.m, mvp_sd->bl.x, mvp_sd->bl.y, mvp_sd->status.char_id,
+					(second_sd ? second_sd->status.char_id : 0), (third_sd ? third_sd->status.char_id : 0), 1, 0, true);
+			}
+
+			if (i_data->flag.broadcast) {
+				intif_broadcast_obtain_special_item(mvp_sd, item.nameid, md->mob_id, ITEMOBTAIN_TYPE_MONSTER_ITEM);
+			}
+
+			log_pick_mob(const_cast<mob_data *>(md), LOG_TYPE_MVP, -1, &item);
+		}
+	}
 }
 
 const std::string MobDatabase::getDefaultLocation() {
@@ -6233,6 +6355,34 @@ uint64 MobEssenceDropDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return true;
 	};
 
+	auto parse_element = [&](const ryml::NodeRef& parent, e_element &out) -> bool {
+		std::string element_name;
+		int64 constant;
+
+		try {
+			parent >> element_name;
+		} catch (std::runtime_error const&) {
+			this->invalidWarning(parent, "Element name could not be parsed as string.\n");
+			return false;
+		}
+
+		if (script_get_constant(element_name.c_str(), &constant) && CHK_ELEMENT(constant)) {
+			out = static_cast<e_element>(constant);
+			return true;
+		}
+
+		std::transform(element_name.begin(), element_name.end(), element_name.begin(), ::toupper);
+		element_name = "ELE_" + element_name;
+
+		if (!script_get_constant(element_name.c_str(), &constant) || !CHK_ELEMENT(constant)) {
+			this->invalidWarning(parent, "Unknown element %s.\n", element_name.c_str());
+			return false;
+		}
+
+		out = static_cast<e_element>(constant);
+		return true;
+	};
+
 	if (this->nodeExists(node, "Common")) {
 		const auto &commonNode = node["Common"];
 
@@ -6284,6 +6434,101 @@ uint64 MobEssenceDropDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 				assigned_mobs.push_back(mob_id);
 			}
+		}
+	}
+
+	if (this->nodeExists(node, "Pools")) {
+		const auto &poolsNode = node["Pools"];
+
+		for (const auto &poolNode : poolsNode) {
+			s_mob_essence_drop_pool pool;
+			std::string apply_to_name;
+
+			if (!this->nodesExist(poolNode, { "Name", "ApplyTo", "Drops" })) {
+				return 0;
+			}
+
+			if (!this->asString(poolNode, "Name", pool.name)) {
+				return 0;
+			}
+
+			if (!this->asString(poolNode, "ApplyTo", apply_to_name)) {
+				return 0;
+			}
+
+			if (apply_to_name == "All") {
+				pool.apply_to = MOB_ESSENCE_APPLY_ALL;
+			} else if (apply_to_name == "NonMvp") {
+				pool.apply_to = MOB_ESSENCE_APPLY_NONMVP;
+			} else if (apply_to_name == "MvpOnly") {
+				pool.apply_to = MOB_ESSENCE_APPLY_MVPONLY;
+			} else {
+				this->invalidWarning(poolNode["ApplyTo"], "Unknown ApplyTo value %s.\n", apply_to_name.c_str());
+				return 0;
+			}
+
+			if (this->nodeExists(poolNode, "Filters")) {
+				const auto &filtersNode = poolNode["Filters"];
+
+				if (this->nodeExists(filtersNode, "Elements")) {
+					const auto &elementsNode = filtersNode["Elements"];
+
+					for (const auto &elementNode : elementsNode) {
+						e_element element;
+
+						if (!parse_element(elementNode, element)) {
+							return 0;
+						}
+
+						if (!util::vector_exists(pool.filters.elements, element)) {
+							pool.filters.elements.push_back(element);
+						}
+					}
+				}
+
+				if (this->nodeExists(filtersNode, "MinLevel")) {
+					if (!this->asUInt16(filtersNode, "MinLevel", pool.filters.min_level)) {
+						return 0;
+					}
+				}
+
+				if (this->nodeExists(filtersNode, "MaxLevel")) {
+					if (!this->asUInt16(filtersNode, "MaxLevel", pool.filters.max_level)) {
+						return 0;
+					}
+				}
+
+				if (pool.filters.min_level > 0 && pool.filters.max_level > 0 && pool.filters.min_level > pool.filters.max_level) {
+					this->invalidWarning(filtersNode, "MinLevel cannot be greater than MaxLevel.\n");
+					return 0;
+				}
+			}
+
+			const auto &dropsNode = poolNode["Drops"];
+			for (const auto &dropNode : dropsNode) {
+				s_mob_essence_drop_entry entry;
+
+				if (!this->nodesExist(dropNode, { "Item", "Rate" })) {
+					return 0;
+				}
+
+				if (!parse_item_id(dropNode, "Item", entry.item_id)) {
+					return 0;
+				}
+
+				if (!this->asUInt32Rate(dropNode, "Rate", entry.rate)) {
+					return 0;
+				}
+
+				pool.drops.push_back(entry);
+			}
+
+			if (pool.drops.empty()) {
+				this->invalidWarning(poolNode["Drops"], "Pool %s must define at least one drop.\n", pool.name.c_str());
+				return 0;
+			}
+
+			data->pools.push_back(pool);
 		}
 	}
 

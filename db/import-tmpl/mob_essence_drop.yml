@@ -75,6 +75,14 @@ Body:
           1647,
           1648,
           1646,
-          2087,
-          
+          2087
         ]
+    Pools:
+      - Name: SoulEssenceGhost75
+        ApplyTo: All
+        Filters:
+          Elements: [Ghost]
+          MinLevel: 75
+        Drops:
+          - Item: 41000
+            Rate: 10

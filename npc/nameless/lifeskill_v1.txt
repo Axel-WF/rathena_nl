@@ -1,0 +1,397 @@
+//===== rAthena Script =======================================
+//= Life Skill v1
+//===== Description: =========================================
+//= Shared-node foraging and mining foundation with official
+//= +10 stat food unlocks through the cooking UI.
+//============================================================
+
+function	script	F_LifeSkillRankName	{
+	.@rank = getarg(0);
+	if (.@rank <= 1)
+		return "Apprentice";
+	if (.@rank == 2)
+		return "Journeyman";
+	return "Artisan";
+}
+
+function	script	F_LifeSkillYieldBonus	{
+	.@rank = getarg(0);
+	.@bonus = 0;
+	if (.@rank >= 2)
+		.@bonus++;
+	if (.@rank >= 3 && rand(100) < 35)
+		.@bonus++;
+	return .@bonus;
+}
+
+function	script	F_LifeSkillGain	{
+	.@profession$ = getarg(0);
+	if (.@profession$ == "Foraging") {
+		ForagingPoints++;
+		.@old_rank = ForagingRank;
+		if (ForagingRank < 1)
+			ForagingRank = 1;
+		if (ForagingPoints >= 25)
+			ForagingRank = 3;
+		else if (ForagingPoints >= 10 && ForagingRank < 2)
+			ForagingRank = 2;
+		if (ForagingRank > .@old_rank)
+			dispbottom "[Life Skill] Your Foraging rank is now " + callfunc("F_LifeSkillRankName", ForagingRank) + ".";
+		return ForagingRank;
+	}
+
+	MiningPoints++;
+	.@old_rank = MiningRank;
+	if (MiningRank < 1)
+		MiningRank = 1;
+	if (MiningPoints >= 25)
+		MiningRank = 3;
+	else if (MiningPoints >= 10 && MiningRank < 2)
+		MiningRank = 2;
+	if (MiningRank > .@old_rank)
+		dispbottom "[Life Skill] Your Mining rank is now " + callfunc("F_LifeSkillRankName", MiningRank) + ".";
+	return MiningRank;
+}
+
+prontera,156,181,4	script	Life Master	4_M_YURI,{
+	mes "[Life Master]";
+	switch(select("What is this system?:Register me for Life Skills:Show my progress:Unlock or replace recipes/tools:Craft stat food")) {
+	case 1:
+		mes "Life Skills split into ^0055FFForaging^000000 and ^AA5500Mining^000000.";
+		mes "Foraging feeds your stat food pipeline now.";
+		mes "Mining starts here as future gear-crafting infrastructure.";
+		close;
+
+	case 2:
+		if (!LifeSkillStarterKit) {
+			LifeSkillStarterKit = 1;
+			ForagingRank = 1;
+			MiningRank = 1;
+			ForagingPoints = 0;
+			MiningPoints = 0;
+			getitem 50000,1;
+			getitem 50001,1;
+			getitem 7481,1;
+			mes "You are registered as an Apprentice Forager and Apprentice Miner.";
+			mes "I've also issued your basic tools and a Level 10 Cookbook.";
+		} else
+			mes "You are already registered. I can replace missing tools or manuals.";
+		callsub S_GrantFoodUnlocks;
+		close;
+
+	case 3:
+		mes "Foraging Rank: ^0055FF" + callfunc("F_LifeSkillRankName", ForagingRank) + "^000000";
+		mes "Foraging Points: ^0055FF" + ForagingPoints + "^000000";
+		mes "Mining Rank: ^AA5500" + callfunc("F_LifeSkillRankName", MiningRank) + "^000000";
+		mes "Mining Points: ^AA5500" + MiningPoints + "^000000";
+		mes "Unlocked food notes: " + (FoodUnlockStr + FoodUnlockAgi + FoodUnlockDex + FoodUnlockVit + FoodUnlockInt + FoodUnlockLuk) + " / 6";
+		close;
+
+	case 4:
+		callsub S_GrantFoodUnlocks;
+		.@replaced = 0;
+		if (LifeSkillStarterKit && countitem(50000) == 0) {
+			getitem 50000,1;
+			.@replaced++;
+		}
+		if (LifeSkillStarterKit && countitem(50001) == 0) {
+			getitem 50001,1;
+			.@replaced++;
+		}
+		if (LifeSkillStarterKit && countitem(7481) == 0) {
+			getitem 7481,1;
+			.@replaced++;
+		}
+		if (FoodUnlockStr && countitem(50015) == 0) {
+			getitem 50015,1;
+			.@replaced++;
+		}
+		if (FoodUnlockAgi && countitem(50016) == 0) {
+			getitem 50016,1;
+			.@replaced++;
+		}
+		if (FoodUnlockVit && countitem(50017) == 0) {
+			getitem 50017,1;
+			.@replaced++;
+		}
+		if (FoodUnlockInt && countitem(50018) == 0) {
+			getitem 50018,1;
+			.@replaced++;
+		}
+		if (FoodUnlockDex && countitem(50019) == 0) {
+			getitem 50019,1;
+			.@replaced++;
+		}
+		if (FoodUnlockLuk && countitem(50020) == 0) {
+			getitem 50020,1;
+			.@replaced++;
+		}
+		if (.@replaced)
+			mes "I've replaced your missing toolkit items.";
+		else
+			mes "You are not missing anything that I can replace.";
+		close;
+
+	case 5:
+		if (!LifeSkillStarterKit) {
+			mes "Register first. Then I can authorize the cooking notes.";
+			close;
+		}
+		callsub S_GrantFoodUnlocks;
+		if (countitem(7481) == 0) {
+			mes "You need your ^0055FFLevel 10 Cookbook^000000 in inventory.";
+			close;
+		}
+		if (!(FoodUnlockStr || FoodUnlockAgi || FoodUnlockDex || FoodUnlockVit || FoodUnlockInt || FoodUnlockLuk)) {
+			mes "You have not unlocked any food notes yet.";
+			close;
+		}
+		mes "I'll open the official cooking interface for your unlocked +10 foods.";
+		next;
+		cooking 20;
+		close;
+	}
+
+S_GrantFoodUnlocks:
+	if (ForagingRank >= 1 && !FoodUnlockStr) {
+		FoodUnlockStr = 1;
+		getitem 50015,1;
+		mes "Unlocked: ^0055FFSteamed Tongue^000000 notes.";
+	}
+	if (ForagingRank >= 1 && !FoodUnlockAgi) {
+		FoodUnlockAgi = 1;
+		getitem 50016,1;
+		mes "Unlocked: ^0055FFSteamed Desert Scorpions^000000 notes.";
+	}
+	if (ForagingRank >= 1 && !FoodUnlockDex) {
+		FoodUnlockDex = 1;
+		getitem 50019,1;
+		mes "Unlocked: ^0055FFHwergelmir's Tonic^000000 notes.";
+	}
+	if (ForagingRank >= 2 && !FoodUnlockVit) {
+		FoodUnlockVit = 1;
+		getitem 50017,1;
+		mes "Unlocked: ^0055FFImmortal Stew^000000 notes.";
+	}
+	if (ForagingRank >= 2 && !FoodUnlockInt) {
+		FoodUnlockInt = 1;
+		getitem 50018,1;
+		mes "Unlocked: ^0055FFDragon Breath Cocktail^000000 notes.";
+	}
+	if (ForagingRank >= 3 && !FoodUnlockLuk) {
+		FoodUnlockLuk = 1;
+		getitem 50020,1;
+		mes "Unlocked: ^0055FFCooked Nine Tail's Tails^000000 notes.";
+	}
+	return;
+}
+
+einbroch,174,187,4	duplicate(Life Master)	Life Master#ein	4_M_YURI
+
+prt_fild08,175,251,3	script	Wild Herb Patch#01	1080,{
+	if (!LifeSkillStarterKit || ForagingRank < 1) {
+		dispbottom "[Life Skill] You need Life Skill registration before you can harvest this.";
+		end;
+	}
+	if (countitem(50000) < 1) {
+		dispbottom "[Life Skill] You need a Forager's Sickle.";
+		end;
+	}
+	dispbottom "[Life Skill] Gathering herbs...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", ForagingRank);
+	.@roll = rand(100);
+	if (.@roll < 55)
+		getitem 50002,.@yield;
+	else if (.@roll < 85)
+		getitem 50003,.@yield;
+	else
+		getitem 50008,.@yield;
+	callfunc "F_LifeSkillGain", "Foraging";
+	dispbottom "[Life Skill] The node has been depleted for a while.";
+	disablenpc strnpcinfo(0);
+	addtimer 180000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+pay_fild08,140,322,3	script	Medicinal Grove#01	1078,{
+	if (!LifeSkillStarterKit || ForagingRank < 1) {
+		dispbottom "[Life Skill] You need Life Skill registration before you can harvest this.";
+		end;
+	}
+	if (countitem(50000) < 1) {
+		dispbottom "[Life Skill] You need a Forager's Sickle.";
+		end;
+	}
+	dispbottom "[Life Skill] Harvesting medicinal plants...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", ForagingRank);
+	.@roll = rand(100);
+	if (.@roll < 45)
+		getitem 50003,.@yield;
+	else if (.@roll < 80)
+		getitem 50004,.@yield;
+	else
+		getitem 50007,.@yield;
+	callfunc "F_LifeSkillGain", "Foraging";
+	dispbottom "[Life Skill] The grove needs time to recover.";
+	disablenpc strnpcinfo(0);
+	addtimer 240000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+mjolnir_02,82,362,3	script	Storm Vine#01	1118,{
+	if (!LifeSkillStarterKit || ForagingRank < 2) {
+		dispbottom "[Life Skill] Your Foraging rank is too low for this growth.";
+		end;
+	}
+	if (countitem(50000) < 1) {
+		dispbottom "[Life Skill] You need a Forager's Sickle.";
+		end;
+	}
+	dispbottom "[Life Skill] Cutting wild vines...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", ForagingRank);
+	.@roll = rand(100);
+	if (.@roll < 45)
+		getitem 50006,.@yield;
+	else if (.@roll < 80)
+		getitem 50010,.@yield;
+	else
+		getitem 50008,.@yield;
+	callfunc "F_LifeSkillGain", "Foraging";
+	dispbottom "[Life Skill] The vines will regrow later.";
+	disablenpc strnpcinfo(0);
+	addtimer 300000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+um_fild01,208,264,3	script	Umbral Bloom#01	1083,{
+	if (!LifeSkillStarterKit || ForagingRank < 2) {
+		dispbottom "[Life Skill] Your Foraging rank is too low for these rare blossoms.";
+		end;
+	}
+	if (countitem(50000) < 1) {
+		dispbottom "[Life Skill] You need a Forager's Sickle.";
+		end;
+	}
+	dispbottom "[Life Skill] Harvesting a rare bloom...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", ForagingRank);
+	.@roll = rand(100);
+	if (.@roll < 40)
+		getitem 50007,.@yield;
+	else if (.@roll < 75)
+		getitem 50009,.@yield;
+	else
+		getitem 50010,.@yield;
+	callfunc "F_LifeSkillGain", "Foraging";
+	dispbottom "[Life Skill] The bloom has gone dormant.";
+	disablenpc strnpcinfo(0);
+	addtimer 360000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+ein_fild06,282,172,3	script	Copper Vein#01	4_CRACK,{
+	if (!LifeSkillStarterKit || MiningRank < 1) {
+		dispbottom "[Life Skill] You need Life Skill registration before you can mine this.";
+		end;
+	}
+	if (countitem(50001) < 1) {
+		dispbottom "[Life Skill] You need a Miner's Pickaxe.";
+		end;
+	}
+	dispbottom "[Life Skill] Mining copper ore...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", MiningRank);
+	.@roll = rand(100);
+	if (.@roll < 65)
+		getitem 50011,.@yield;
+	else
+		getitem 50014,.@yield;
+	callfunc "F_LifeSkillGain", "Mining";
+	dispbottom "[Life Skill] The vein needs time to settle.";
+	disablenpc strnpcinfo(0);
+	addtimer 240000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+ein_dun01,69,214,3	script	Iron Vein#01	4_CRACK,{
+	if (!LifeSkillStarterKit || MiningRank < 2) {
+		dispbottom "[Life Skill] Your Mining rank is too low for this vein.";
+		end;
+	}
+	if (countitem(50001) < 1) {
+		dispbottom "[Life Skill] You need a Miner's Pickaxe.";
+		end;
+	}
+	dispbottom "[Life Skill] Mining dense iron ore...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", MiningRank);
+	.@roll = rand(100);
+	if (.@roll < 50)
+		getitem 50012,.@yield;
+	else if (.@roll < 85)
+		getitem 50014,.@yield;
+	else
+		getitem 50011,.@yield;
+	callfunc "F_LifeSkillGain", "Mining";
+	dispbottom "[Life Skill] The vein has been exhausted for now.";
+	disablenpc strnpcinfo(0);
+	addtimer 300000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}
+
+rockmi1,162,95,3	script	Crystal Vein#01	4_CRACK,{
+	if (!LifeSkillStarterKit || MiningRank < 3) {
+		dispbottom "[Life Skill] Only skilled miners can break this vein safely.";
+		end;
+	}
+	if (countitem(50001) < 1) {
+		dispbottom "[Life Skill] You need a Miner's Pickaxe.";
+		end;
+	}
+	dispbottom "[Life Skill] Extracting crystal ore...";
+	progressbar "66ccff", 2;
+	.@yield = 1 + callfunc("F_LifeSkillYieldBonus", MiningRank);
+	.@roll = rand(100);
+	if (.@roll < 45)
+		getitem 50013,.@yield;
+	else if (.@roll < 80)
+		getitem 50012,.@yield;
+	else
+		getitem 50014,.@yield;
+	callfunc "F_LifeSkillGain", "Mining";
+	dispbottom "[Life Skill] The crystal seam will reform later.";
+	disablenpc strnpcinfo(0);
+	addtimer 420000,strnpcinfo(3) + "::OnRespawn";
+	end;
+
+OnRespawn:
+	enablenpc strnpcinfo(0);
+	end;
+}

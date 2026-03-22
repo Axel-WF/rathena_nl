@@ -16,6 +16,16 @@
 #       Item: Item ID injected for MVPs in that tier.
 #       Rate: Drop rate in 1/10000 format.
 #       MobIds: List of MVP mob IDs assigned to the tier.
+#   Pools:
+#     - Name: Optional pool name used for diagnostics.
+#       ApplyTo: All, NonMvp, or MvpOnly.
+#       Filters:
+#         Elements: Optional list of monster defense elements (example: Ghost).
+#         MinLevel: Optional inclusive minimum monster level.
+#         MaxLevel: Optional inclusive maximum monster level.
+#       Drops:
+#         - Item: Item ID to inject when the pool matches.
+#           Rate: Drop rate in 1/10000 format.
 #
 ###########################################################################
 

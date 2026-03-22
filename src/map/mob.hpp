@@ -236,12 +236,37 @@ struct s_mob_essence_drop_tier {
 	std::vector<uint32> mob_ids;
 };
 
+enum e_mob_essence_apply_to : uint8 {
+	MOB_ESSENCE_APPLY_ALL = 0,
+	MOB_ESSENCE_APPLY_NONMVP,
+	MOB_ESSENCE_APPLY_MVPONLY,
+};
+
+struct s_mob_essence_drop_entry {
+	t_itemid item_id = 0;
+	uint32 rate = 0;
+};
+
+struct s_mob_essence_drop_filter {
+	std::vector<e_element> elements;
+	uint16 min_level = 0;
+	uint16 max_level = 0;
+};
+
+struct s_mob_essence_drop_pool {
+	std::string name;
+	e_mob_essence_apply_to apply_to = MOB_ESSENCE_APPLY_ALL;
+	s_mob_essence_drop_filter filters;
+	std::vector<s_mob_essence_drop_entry> drops;
+};
+
 struct s_mob_essence_drop {
 	uint16 id = 0;
 	t_itemid common_item_id = 0;
 	uint32 common_rate = 0;
 	std::vector<uint32> common_blacklist;
 	s_mob_essence_drop_tier mvp_tier[3];
+	std::vector<s_mob_essence_drop_pool> pools;
 };
 
 class MobEssenceDropDatabase : public TypesafeYamlDatabase<uint16, s_mob_essence_drop> {
